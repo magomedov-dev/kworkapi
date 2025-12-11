@@ -1,3 +1,6 @@
+# Локальные инструменты реверса (jadx, frida-server и т.п.)
+.tooling/
+
 # Python
 __pycache__/
 *.py[cod]

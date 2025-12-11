@@ -1,60 +1,23 @@
 # Карта эндпоинтов api.kwork.ru
 
-Заполняется по мере захвата трафика (Фаза 1). По каждому подтверждённому методу
-снимаем галочку и подставляем реальные значения в код библиотеки.
+Полный каталог (192 эндпоинта, 14 сервисов) генерируется из декомпилированного
+приложения и лежит в **[../docs/03-endpoints.md](../docs/03-endpoints.md)**.
 
-## Базовое (подтвердить захватом)
+Перегенерировать после обновления APK:
+
+```bash
+python research/extract_endpoints.py > docs/03-endpoints.md
+```
+
+Подтверждённые базовые факты (см. [../docs/02-kwork-api-reference.md](../docs/02-kwork-api-reference.md)):
 
 | Параметр | Значение | Статус |
 |---|---|---|
-| Base URL | `https://api.kwork.ru/` | ⬜ не подтверждён |
-| `Authorization` (app) | `Basic ...` (из APK) | ⬜ не найден |
-| User-Agent | ? | ⬜ |
-| Подпись запросов | нет / HMAC? | ⬜ |
-| Форма ошибки | `{success: false, ...}` ? | ⬜ |
+| Base URL | `https://api.kwork.ru/` | ✅ из `cy/d.java` |
+| `Authorization` (app) | `Basic bW9iaWxlX2FwaTpxRnZmUmw3dw==` | ✅ из `nr/d.java` |
+| Токен пользователя | поле `token` | ✅ ответ `/signIn` |
+| `uad` | SHA-1 device id | ✅ из `nr/d.java` |
+| Cookie | `slrememberme=<value>` | ✅ из `nr/d.java` |
+| Формы ответов | `DataResponse`/`PagedResponse`/`BooleanResponse` | ✅ из моделей |
 
-## Методы
-
-Шаблон записи:
-
-```
-### <название> — POST /<method>
-Статус: ⬜ не подтверждён | ✅ подтверждён
-Назначение: ...
-Запрос (form-data):
-  token: <user token>
-  ...
-Ответ (пример, обрезанный, без личных данных):
-  { ... }
-```
-
----
-
-### Авторизация — POST /signIn
-Статус: ⬜
-Запрос: `login`, `password`, `phone`
-Ответ: `token`, профиль пользователя
-
-### Каталог категорий — POST /categories
-Статус: ⬜
-
-### Поиск — POST /search
-Статус: ⬜
-
-### Лента биржи проектов — POST /projects
-Статус: ⬜
-
-### Заказы — POST /orders
-Статус: ⬜
-
-### Диалоги — POST /getDialogs
-Статус: ⬜
-
-### История переписки — POST /dialog
-Статус: ⬜
-
-### Отправка сообщения — POST /inboxCreate
-Статус: ⬜
-
-### Уведомления — POST /actualNotice
-Статус: ⬜
+Осталось подтвердить живым трафиком (mitmproxy): точные формы JSON-ответов и `User-Agent`.
