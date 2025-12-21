@@ -8,9 +8,11 @@ from kworkapi.auth import Auth, Session
 from kworkapi.exceptions import KworkAuthError
 from kworkapi.resources.account import AccountResource
 from kworkapi.resources.catalog import CatalogResource
+from kworkapi.resources.exchange import ExchangeResource
 from kworkapi.resources.messages import MessagesResource
 from kworkapi.resources.orders import OrdersResource
-from kworkapi.resources.projects import ProjectsResource
+from kworkapi.resources.search import SearchResource
+from kworkapi.resources.users import UsersResource
 from kworkapi.transport import Transport
 
 
@@ -48,7 +50,9 @@ class KworkClient:
         # Группы методов (ресурсы).
         self.account = AccountResource(self)
         self.catalog = CatalogResource(self)
-        self.projects = ProjectsResource(self)
+        self.search = SearchResource(self)
+        self.exchange = ExchangeResource(self)
+        self.users = UsersResource(self)
         self.orders = OrdersResource(self)
         self.messages = MessagesResource(self)
 

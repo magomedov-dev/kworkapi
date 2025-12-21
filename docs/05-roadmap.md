@@ -32,16 +32,19 @@ Conventional Commits на русском. Каждая фаза заканчив
 - **Проверка:** реальный логин тестовым аккаунтом, получение `token` (с учётом капчи).
 - Тесты: разбор обёрток, ошибки, авторизация (моки) + 1 интеграционный (опц., помечен).
 
-## Фаза 3 — Чтение каталога и бирж ⬜
+## Фаза 3 — Чтение каталога и бирж ✅
 **Ветка:** `feature/phase-3-read`
-- `account`: `me`/`actor`, `notifications`, `balance`, `features`.
-- `catalog`: `rubrics`, `categories`, `kworks`, `favorites`, `viewed`, `filters`.
-- `search`: `kworks`, `users`.
-- `exchange`: `projects` (лента биржи), `categories`, `getProjectsCount`.
-- `users`: `info`, `userKworks`, `reviews`.
-- `kworks`: `details`, `reviews`, `answers`, `portfolios`.
-- Pydantic-модели для этих ответов (по полям из кода + проверка).
-- Тесты на каждый ресурс (моки фикстур ответов).
+- ✅ `account`: `me` (/actor), `notifications`, `security_data`, `payment_methods`, `badges`, `available_features`.
+- ✅ `catalog`: `categories` (дерево), `rubrics`, `main`, `kworks`, `favorites`, `hidden`, `viewed`, `filters`.
+- ✅ `search`: `kworks`, `suggest`, `users`.
+- ✅ `exchange`: `projects` (лента биржи), `info`, `categories`, `favorite_categories`, `wants_count`, `my_offers`, `my_wants`.
+- ✅ `users`: `get`, `by_username`, `kworks`, `reviews`.
+- ✅ `orders` (чтение): `worker`, `payer` (с обработкой «нет заказов», code 151).
+- ✅ Pydantic-модели: Actor, User, Kwork/KworksResult, Dialog/InboxMessage, Category,
+  Project/Offer, ExchangeInfo, Paging, Page[T] (extra=allow).
+- ✅ Тесты: моки (respx) + опциональный живой тест (KWORK_LIVE=1).
+- ✅ Проверено на живом API: профиль, дерево категорий, поиск (54k+), диалоги, биржа.
+- ⬜ Перенести (Фаза 4) детали kwork: открываются в webview через `getWebAuthToken`.
 
 ## Фаза 4 — Действия и сообщения ⬜
 **Ветка:** `feature/phase-4-actions`
@@ -65,6 +68,10 @@ Conventional Commits на русском. Каждая фаза заканчив
 
 ## Фаза 6 — Надёжность и качество ⬜
 **Ветка:** `feature/phase-6-hardening`
+- **Анти-бот (подтверждено на практике):** частые входы `/signIn` с разными `uad`
+  с одного IP приводят к HTTP 403. Выводы для библиотеки:
+  переиспользовать `uad` (персистить), хранить и переиспользовать сессию вместо
+  повторного логина, добавить троттлинг/бэкофф на `signIn`, поддержать капчу.
 - Rate-limit/троттлинг, бэкофф, обработка капчи/ограничений.
 - Логирование, ретраи, таймауты, корректное закрытие пулов.
 - Полная типизация (`mypy`), линт (`ruff`), pre-commit.

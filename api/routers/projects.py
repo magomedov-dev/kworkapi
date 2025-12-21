@@ -9,23 +9,21 @@ from fastapi import APIRouter, Depends
 from api.deps import get_client
 from kworkapi import KworkClient
 
-router = APIRouter(prefix="/projects", tags=["projects"])
+router = APIRouter(prefix="/exchange", tags=["exchange"])
 
 
-@router.get("")
-async def feed(
+@router.get("/projects")
+async def projects(
     client: Annotated[KworkClient, Depends(get_client)],
+    categories: str = "all",
     page: int = 1,
-    category: int | None = None,
 ) -> dict:
     """Лента проектов на бирже."""
-    return await client.projects.feed(page=page, category=category)
+    return await client.exchange.projects(categories=categories, page=page)
 
 
-@router.get("/{project_id}")
-async def get_project(
-    project_id: int,
-    client: Annotated[KworkClient, Depends(get_client)],
-) -> dict:
-    """Детали проекта."""
-    return await client.projects.get(project_id)
+@router.get("/offers")
+async def my_offers(client: Annotated[KworkClient, Depends(get_client)]) -> list:
+    """Мои отклики."""
+    offers = await client.exchange.my_offers()
+    return [o.model_dump() for o in offers]

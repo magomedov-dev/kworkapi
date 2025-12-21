@@ -13,9 +13,9 @@ router = APIRouter(prefix="/catalog", tags=["catalog"])
 
 
 @router.get("/categories")
-async def categories(client: Annotated[KworkClient, Depends(get_client)]) -> dict:
+async def categories(client: Annotated[KworkClient, Depends(get_client)]) -> list:
     """Дерево категорий."""
-    return await client.catalog.categories()
+    return [c.model_dump() for c in await client.catalog.categories()]
 
 
 @router.get("/search")
@@ -25,4 +25,4 @@ async def search(
     page: int = 1,
 ) -> dict:
     """Поиск kwork'ов."""
-    return await client.catalog.search(q, page=page)
+    return (await client.search.kworks(q, page=page)).model_dump()
