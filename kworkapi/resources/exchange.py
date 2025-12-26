@@ -53,3 +53,53 @@ class ExchangeResource(Resource):
         """Мои размещённые проекты (`/myWants`)."""
         data = {"page": page, "want_status_id": status_id}
         return await self._call("myWants", data=data)
+
+    # --- действия ------------------------------------------------------
+
+    async def create_offer(
+        self,
+        want_id: int,
+        description: str,
+        *,
+        price: int,
+        duration: int,
+        offer_type: str = "custom",
+    ) -> dict:
+        """Откликнуться на проект (`/api/offer/createoffer`, multipart).
+
+        :param want_id: id проекта.
+        :param description: текст отклика.
+        :param price: цена в рублях.
+        :param duration: срок в днях.
+        """
+        data = {
+            "wantId": want_id,
+            "offerType": offer_type,
+            "description": description,
+            "kwork_price": price,
+            "kwork_duration": duration,
+        }
+        return await self._call("api/offer/createoffer", data=data, multipart=True)
+
+    async def edit_offer(
+        self,
+        want_id: int,
+        description: str,
+        *,
+        price: int,
+        duration: int,
+        offer_type: str = "custom",
+    ) -> dict:
+        """Изменить отклик (`/api/offer/editoffer`, multipart)."""
+        data = {
+            "wantId": want_id,
+            "offerType": offer_type,
+            "description": description,
+            "kwork_price": price,
+            "kwork_duration": duration,
+        }
+        return await self._call("api/offer/editoffer", data=data, multipart=True)
+
+    async def delete_offer(self, offer_id: int) -> dict:
+        """Удалить отклик (`/api/offer/deleteoffer`)."""
+        return await self._call("api/offer/deleteoffer", data={"id": offer_id})

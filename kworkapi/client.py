@@ -9,6 +9,7 @@ from kworkapi.exceptions import KworkAuthError
 from kworkapi.resources.account import AccountResource
 from kworkapi.resources.catalog import CatalogResource
 from kworkapi.resources.exchange import ExchangeResource
+from kworkapi.resources.kworks import KworksResource
 from kworkapi.resources.messages import MessagesResource
 from kworkapi.resources.orders import OrdersResource
 from kworkapi.resources.search import SearchResource
@@ -53,6 +54,7 @@ class KworkClient:
         self.search = SearchResource(self)
         self.exchange = ExchangeResource(self)
         self.users = UsersResource(self)
+        self.kworks = KworksResource(self)
         self.orders = OrdersResource(self)
         self.messages = MessagesResource(self)
 
@@ -92,14 +94,18 @@ class KworkClient:
 
     # --- низкоуровневый вызов (используется ресурсами) -------------------
 
-    async def call(self, method: str, *, data: dict | None = None, auth: bool = True) -> dict:
+    async def call(
+        self, method: str, *, data: dict | None = None, auth: bool = True, multipart: bool = False
+    ) -> dict:
         """Вызвать метод API. При ``auth=True`` требуется активная сессия."""
         token = None
         if auth:
             if not self.is_authenticated:
                 raise KworkAuthError(f"Метод {method} требует авторизации — сначала login()")
             token = self.session.token
-        return await self._transport.call(method, data=data, token=token, auth=auth)
+        return await self._transport.call(
+            method, data=data, token=token, auth=auth, multipart=multipart
+        )
 
     # --- управление жизненным циклом ------------------------------------
 

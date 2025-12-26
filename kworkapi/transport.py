@@ -84,6 +84,7 @@ class Transport:
         data: dict[str, Any] | None = None,
         token: str | None = None,
         auth: bool = True,
+        multipart: bool = False,
     ) -> dict[str, Any]:
         """Вызвать метод API. Возвращает распарсенный JSON-ответ целиком.
 
@@ -91,6 +92,7 @@ class Transport:
         :param data: специфичные поля формы.
         :param token: пользовательский токен (для авторизованных запросов).
         :param auth: добавлять ли общие поля авторизации (token/slrememberme).
+        :param multipart: слать ли тело как multipart/form-data (нужно части REST-методов).
         """
         payload: dict[str, Any] = {k: v for k, v in (data or {}).items() if v is not None}
         payload.setdefault("uad", self.uad)
@@ -102,11 +104,18 @@ class Transport:
             if slr:
                 payload.setdefault("slrememberme", slr)
 
+        # multipart: поля без файлов передаём как части (None, value)
+        post_kwargs: dict[str, Any]
+        if multipart:
+            post_kwargs = {"files": {k: (None, str(v)) for k, v in payload.items()}}
+        else:
+            post_kwargs = {"data": payload}
+
         path = method.lstrip("/")
         last_exc: Exception | None = None
         for attempt in range(1, self.max_retries + 1):
             try:
-                response = await self._client.post(path, data=payload)
+                response = await self._client.post(path, **post_kwargs)
             except httpx.TransportError as exc:
                 last_exc = exc
                 logger.warning("Сеть (%s/%s) %s: %s", attempt, self.max_retries, method, exc)
@@ -118,6 +127,14 @@ class Transport:
                     await asyncio.sleep(self.retry_backoff * attempt * 2)
                     continue
                 raise KworkRateLimitError("Превышен лимит запросов (HTTP 429)", code=429)
+
+            if response.status_code == 403:
+                # Подтверждено на практике: частые /signIn с одного IP ловят анти-бот.
+                raise KworkRateLimitError(
+                    "Доступ запрещён (HTTP 403) — вероятно сработал анти-бот/лимит "
+                    "(частые входы). Переиспользуйте сессию и uad, добавьте паузу.",
+                    code=403,
+                )
 
             return self._parse(method, response)
 

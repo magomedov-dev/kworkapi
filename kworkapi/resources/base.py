@@ -19,9 +19,14 @@ class Resource:
         self._client = client
 
     async def _call(
-        self, method: str, *, data: dict[str, Any] | None = None, auth: bool = True
+        self,
+        method: str,
+        *,
+        data: dict[str, Any] | None = None,
+        auth: bool = True,
+        multipart: bool = False,
     ) -> dict:
-        return await self._client.call(method, data=data, auth=auth)
+        return await self._client.call(method, data=data, auth=auth, multipart=multipart)
 
     # --- разбор ответа в модели ----------------------------------------
 

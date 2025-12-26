@@ -59,6 +59,13 @@ async def test_rate_limit_after_retries(transport):
 
 
 @respx.mock
+async def test_403_maps_to_rate_limit(transport):
+    respx.post(BASE + "signIn").mock(return_value=httpx.Response(403))
+    with pytest.raises(KworkRateLimitError):
+        await transport.call("signIn", auth=False)
+
+
+@respx.mock
 async def test_retries_on_network_error_then_succeeds(transport):
     route = respx.post(BASE + "flaky")
     route.side_effect = [

@@ -46,17 +46,21 @@ Conventional Commits на русском. Каждая фаза заканчив
 - ✅ Проверено на живом API: профиль, дерево категорий, поиск (54k+), диалоги, биржа.
 - ⬜ Перенести (Фаза 4) детали kwork: открываются в webview через `getWebAuthToken`.
 
-## Фаза 4 — Действия и сообщения ⬜
+## Фаза 4 — Действия и сообщения ✅ (частично)
 **Ветка:** `feature/phase-4-actions`
-- `messages`: `dialogs`, `getDialog` (история), `inboxCreate` (отправка), `forward`,
-  `edit`, `delete`, `read`, `searchMessages`, голосовые/треки.
-- `exchange`: `offer`/`deleteOffer`/`myOffers`, управление «wants», `setFavorite`.
-- `orders`: `workerOrders`/`payerOrders`, `details`, `approve`, `cancel`*, стадии,
-  экстры, отзывы (`createReview`), отчёты.
-- `kworks` (исполнитель): `create`/`pause`/`start`/`delete`, статусы.
-- `account` (настройки): `updateSettings`, смена email/username/пароля/телефона,
-  `setTakingOrders`, голосовые настройки, аватар (multipart).
-- Тесты действий (моки) + проверка корректных тел запросов.
+- ✅ `messages`: `send` (inboxCreate), `edit`, `delete`, `mark_read`, `mark_unread`,
+  `set_starred`, `block`/`unblock`, `search`.
+- ✅ `exchange`: `create_offer`/`edit_offer` (multipart `/api/offer/*`), `delete_offer`.
+- ✅ `account`: `update_settings`, `set_taking_orders`, `change_username`/`change_password`,
+  `request_email_change`.
+- ✅ `kworks` (исполнитель): `mark_favorite`, `mark_hidden`, `pause`, `start`, `delete`.
+- ✅ Транспорт: поддержка multipart; HTTP 403 → понятная ошибка (анти-бот).
+- ✅ Тесты: моки тел запросов (multipart, поля) + живой тест действий между двумя
+  аккаунтами (KWORK_LOGIN2), запуск по KWORK_LIVE=1.
+- ⚠️ Живая проверка отложена: IP под анти-бот троттлингом (403) после серии входов —
+  повторить позже. Логика подтверждена моками.
+- ⬜ Остаток (Фаза 4b): заказы (`approve`/`cancel`/стадии/экстры/отзывы), голосовые
+  сообщения/треки, загрузка файлов/аватара, управление «wants».
 
 ## Фаза 5 — FastAPI-сервис ⬜
 **Ветка:** `feature/phase-5-fastapi`
