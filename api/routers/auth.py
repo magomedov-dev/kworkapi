@@ -16,12 +16,13 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 class LoginRequest(BaseModel):
     login: str
     password: str
-    phone: str = ""
+    recaptcha_pass_token: str = ""
 
 
 class LoginResponse(BaseModel):
     token: str
-    user_id: int | None = None
+    expired: int | None = None
+    need_2fa: bool = False
 
 
 @router.post("/login", response_model=LoginResponse)
@@ -29,6 +30,11 @@ async def login(
     body: LoginRequest,
     client: Annotated[KworkClient, Depends(get_anon_client)],
 ) -> LoginResponse:
-    """Войти по логину/паролю и получить токен сессии kwork."""
-    session = await client.login(body.login, body.password, phone=body.phone)
-    return LoginResponse(token=session.token, user_id=session.user_id)
+    """Войти по логину/паролю и получить токен сессии kwork.
+
+    Полученный `token` передавайте в заголовке `X-Kwork-Token` остальным запросам.
+    """
+    session = await client.login(
+        body.login, body.password, recaptcha_pass_token=body.recaptcha_pass_token
+    )
+    return LoginResponse(token=session.token, expired=session.expired, need_2fa=session.need_2fa)

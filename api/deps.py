@@ -1,31 +1,42 @@
-"""Зависимости FastAPI: построение клиента kworkapi из токена запроса."""
+"""Зависимости FastAPI: построение клиента kworkapi из токена запроса.
+
+Сервис стателесс: на каждый запрос создаётся свой KworkClient (свой httpx-пул),
+который закрывается по завершении. `uad` сервиса стабилен в пределах процесса —
+авторизованным вызовам этого достаточно (вход — отдельный кейс).
+"""
 
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from typing import Annotated
 
 from fastapi import Header, HTTPException
 
 from kworkapi import KworkClient
-from kworkapi.transport import Transport
+from kworkapi._device import generate_uad
+from kworkapi.auth import Session
 
-# Один общий транспорт (httpx-пул) на сервис; токен пользователя передаётся per-request.
-_transport = Transport()
+# Стабильный идентификатор установки на время жизни процесса сервиса.
+SERVICE_UAD = generate_uad()
 
 
-def get_client(
+async def get_client(
     x_kwork_token: Annotated[str | None, Header(alias="X-Kwork-Token")] = None,
-) -> KworkClient:
-    """Клиент для авторизованных эндпоинтов: токен берётся из заголовка X-Kwork-Token."""
+) -> AsyncIterator[KworkClient]:
+    """Клиент для авторизованных эндпоинтов: токен из заголовка X-Kwork-Token."""
     if not x_kwork_token:
         raise HTTPException(status_code=401, detail="Нужен заголовок X-Kwork-Token")
-    return KworkClient(token=x_kwork_token, transport=_transport)
+    client = KworkClient(session=Session(token=x_kwork_token, uad=SERVICE_UAD))
+    try:
+        yield client
+    finally:
+        await client.aclose()
 
 
-def get_anon_client() -> KworkClient:
+async def get_anon_client() -> AsyncIterator[KworkClient]:
     """Клиент без токена — для логина."""
-    return KworkClient(transport=_transport)
-
-
-async def close_clients() -> None:
-    await _transport.aclose()
+    client = KworkClient(uad=SERVICE_UAD)
+    try:
+        yield client
+    finally:
+        await client.aclose()

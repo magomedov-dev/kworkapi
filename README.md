@@ -25,8 +25,9 @@ tests/           — тесты (моки через respx)
 
 ## Статус
 
-Фаза 0 (скелет) готова. Дальше — Фаза 1: захват трафика мобильного приложения,
-см. [`research/README.md`](research/README.md).
+Фазы 0–5 готовы: библиотека (авторизация, чтение, действия) и FastAPI-сервис.
+Чтение и вход проверены на живом API. Подробности — в [`docs/`](docs/README.md),
+план — в [`docs/05-roadmap.md`](docs/05-roadmap.md).
 
 ## Установка (dev)
 
@@ -35,12 +36,45 @@ python -m venv .venv && source .venv/bin/activate.fish  # fish: source .venv/bin
 pip install -e ".[server,dev]"
 ```
 
+## Быстрый старт (библиотека)
+
+```python
+import asyncio
+from kworkapi import KworkClient
+
+async def main():
+    async with KworkClient() as kw:
+        await kw.login("user@example.com", "password")
+        me = await kw.account.me()
+        print(me.username, me.free_amount, me.currency)
+        res = await kw.search.kworks("логотип", limit=10)
+        for k in res.kworks:
+            print(k.id, k.title, k.price)
+
+asyncio.run(main())
+```
+
+Ресурсы клиента: `account`, `catalog`, `search`, `exchange`, `users`, `kworks`,
+`orders`, `messages`.
+
+## Запуск REST-сервиса (FastAPI)
+
+```bash
+pip install -e ".[server]"
+uvicorn api.main:app --reload
+# Swagger: http://127.0.0.1:8000/docs
+```
+
+Авторизация сервиса: `POST /auth/login` → токен, далее передавайте его в заголовке
+`X-Kwork-Token`.
+
 ## Дорожная карта
 
 - [x] Фаза 0 — скелет проекта
-- [ ] Фаза 1 — разведка: захват трафика, карта эндпоинтов
-- [ ] Фаза 2 — авторизация (signIn, токен)
-- [ ] Фаза 3 — чтение: каталог, поиск, проекты, заказы
-- [ ] Фаза 4 — действия: сообщения, отклики, настройки
-- [ ] Фаза 5 — FastAPI-обёртка
-- [ ] Фаза 6 — тесты, CI, rate-limit
+- [x] Фаза 1 — разведка: реверс APK + захват трафика, карта эндпоинтов
+- [x] Фаза 2 — авторизация (signIn, токен, uad/сессия)
+- [x] Фаза 3 — чтение: аккаунт, каталог, поиск, биржа, пользователи (+ модели)
+- [x] Фаза 4 — действия: сообщения, отклики, настройки, kwork'и
+- [x] Фаза 5 — FastAPI-обёртка
+- [ ] Фаза 6 — надёжность: троттлинг, типизация, CI
+- [ ] Фаза 7 — релиз
