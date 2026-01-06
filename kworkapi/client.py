@@ -102,6 +102,7 @@ class KworkClient:
         if auth:
             if not self.is_authenticated:
                 raise KworkAuthError(f"Метод {method} требует авторизации — сначала login()")
+            assert self.session is not None  # гарантировано is_authenticated
             token = self.session.token
         return await self._transport.call(
             method, data=data, token=token, auth=auth, multipart=multipart

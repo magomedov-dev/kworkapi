@@ -65,4 +65,4 @@ class Resource:
         paging = Paging(**paging_raw) if isinstance(paging_raw, dict) else None
         if total is None and paging is not None:
             total = paging.total
-        return Page[model](items=items, paging=paging, total=total)
+        return Page[model](items=items, paging=paging, total=total)  # type: ignore[valid-type]

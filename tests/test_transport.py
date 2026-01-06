@@ -65,6 +65,22 @@ async def test_403_maps_to_rate_limit(transport):
         await transport.call("signIn", auth=False)
 
 
+async def test_throttle_requests_wait(monkeypatch):
+    import kworkapi.transport as tmod
+
+    waits: list[float] = []
+
+    async def fake_sleep(seconds):
+        waits.append(seconds)
+
+    monkeypatch.setattr(tmod.asyncio, "sleep", fake_sleep)
+    t = Transport(min_request_interval=0.5)
+    await t._await_throttle()  # первый — без ожидания
+    await t._await_throttle()  # второй — должен запросить паузу
+    await t.aclose()
+    assert waits and waits[-1] > 0
+
+
 @respx.mock
 async def test_retries_on_network_error_then_succeeds(transport):
     route = respx.post(BASE + "flaky")

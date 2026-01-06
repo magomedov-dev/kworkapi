@@ -52,6 +52,7 @@ class Transport:
         timeout: float = 20.0,
         max_retries: int = 3,
         retry_backoff: float = 0.5,
+        min_request_interval: float = 0.0,
         client: httpx.AsyncClient | None = None,
     ) -> None:
         self.base_url = base_url
@@ -59,6 +60,11 @@ class Transport:
         self.device = device
         self.max_retries = max_retries
         self.retry_backoff = retry_backoff
+        # Минимальный интервал между запросами (троттлинг против анти-бота).
+        # 0 = выключено; для боевого использования рекомендуется 0.3–1.0с.
+        self.min_request_interval = min_request_interval
+        self._throttle_lock = asyncio.Lock()
+        self._last_request_at: float | None = None
 
         headers = {
             "Authorization": app_authorization,
@@ -115,6 +121,7 @@ class Transport:
         last_exc: Exception | None = None
         for attempt in range(1, self.max_retries + 1):
             try:
+                await self._await_throttle()
                 response = await self._client.post(path, **post_kwargs)
             except httpx.TransportError as exc:
                 last_exc = exc
@@ -139,6 +146,19 @@ class Transport:
             return self._parse(method, response)
 
         raise KworkError(f"Не удалось выполнить запрос {method}: {last_exc}")
+
+    async def _await_throttle(self) -> None:
+        """Выдержать минимальный интервал между запросами, если задан."""
+        if self.min_request_interval <= 0:
+            return
+        async with self._throttle_lock:
+            now = asyncio.get_running_loop().time()
+            if self._last_request_at is not None:
+                wait = self.min_request_interval - (now - self._last_request_at)
+                if wait > 0:
+                    await asyncio.sleep(wait)
+                    now = asyncio.get_running_loop().time()
+            self._last_request_at = now
 
     async def aclose(self) -> None:
         if self._owns_client:
