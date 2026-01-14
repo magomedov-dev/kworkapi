@@ -1,0 +1,39 @@
+# Changelog
+
+Все заметные изменения проекта. Формат основан на
+[Keep a Changelog](https://keepachangelog.com/ru/1.1.0/),
+версионирование — [SemVer](https://semver.org/lang/ru/).
+
+## [0.1.0] — 2026-06-21
+
+Первый релиз: рабочая библиотека и REST-сервис над приватным API kwork.ru.
+
+### Добавлено
+
+- **Реверс-инжиниринг API** (декомпиляция `ru.kwork.app` + перехват трафика):
+  base URL `https://api.kwork.ru/`, схема авторизации, 192 эндпоинта, из них
+  63 подтверждены живым трафиком. Полная документация в `docs/`.
+- **Ядро клиента** (`KworkClient`, async): транспорт с общими полями
+  (`token`/`uad`/`slrememberme`/`device`), статичный `Authorization`, cookie-jar,
+  ретраи/бэкофф, троттлинг, разбор обёрток и типизированные ошибки.
+- **Авторизация**: `login` (`signIn`), `Session` (token/uad/slrememberme/expired),
+  восстановление сессии (`from_session`), `logout`.
+- **Ресурсы чтения**: `account`, `catalog`, `search`, `exchange`, `users`, `orders`.
+- **Ресурсы действий**: `messages` (отправка/редактирование/удаление/звезда/блок),
+  `exchange` (отклики, multipart `/api/offer/*`), `account` (настройки),
+  `kworks` (избранное/скрытие/пауза/старт/удаление).
+- **Pydantic-модели** ответов (Actor, User, Kwork, Dialog, Offer, Project и др.).
+- **FastAPI-сервис**: REST на все группы ресурсов, авторизация по `X-Kwork-Token`,
+  маппинг ошибок в HTTP, Swagger/ReDoc.
+- **Качество**: тесты (моки + опциональные живые), покрытие 88%, ruff, mypy, CI.
+
+### Известные ограничения
+
+- Детали kwork открываются в приложении через webview (`getWebAuthToken`) — нативного
+  JSON-эндпоинта нет.
+- Частые входы `/signIn` с одного IP ловят анти-бот (HTTP 403) — переиспользуйте
+  сессию и `uad`, включайте троттлинг.
+- Не покрыты (план 4b): детальные операции с заказами (approve/cancel/стадии/отзывы),
+  загрузка файлов/аватара, голосовые сообщения.
+
+[0.1.0]: https://example.com/kworkapi/releases/tag/v0.1.0
