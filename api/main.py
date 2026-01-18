@@ -12,7 +12,18 @@ from __future__ import annotations
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
-from api.routers import account, auth, catalog, exchange, kworks, messages, orders, search, users
+from api.routers import (
+    account,
+    auth,
+    catalog,
+    exchange,
+    files,
+    kworks,
+    messages,
+    orders,
+    search,
+    users,
+)
 from kworkapi.exceptions import (
     KworkAPIError,
     KworkAuthError,
@@ -38,6 +49,7 @@ app.include_router(users.router)
 app.include_router(kworks.router)
 app.include_router(orders.router)
 app.include_router(messages.router)
+app.include_router(files.router)
 
 
 @app.get("/health", tags=["service"])

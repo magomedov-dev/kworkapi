@@ -59,8 +59,19 @@ Conventional Commits на русском. Каждая фаза заканчив
   аккаунтами (KWORK_LOGIN2), запуск по KWORK_LIVE=1.
 - ⚠️ Живая проверка отложена: IP под анти-бот троттлингом (403) после серии входов —
   повторить позже. Логика подтверждена моками.
-- ⬜ Остаток (Фаза 4b): заказы (`approve`/`cancel`/стадии/экстры/отзывы), голосовые
-  сообщения/треки, загрузка файлов/аватара, управление «wants».
+
+## Фаза 4b — Заказы, файлы, детали kwork ✅ (основное)
+**Ветка:** `feature/phase-4b-orders-files`
+- ✅ `orders`: `details`, `header`, `files`, `approve`, `approve_stages`,
+  `send_for_approval`/`send_for_revision`/`send_requirements`, `repeat`, `send_bonus`,
+  `cancel_by_worker`/`cancel_by_payer` (best-effort), `create_review`/`edit_review`/
+  `delete_review`, `create_answer`.
+- ✅ `kworks` (чтение): `details` (getKworkDetails), `reviews`, `portfolios`.
+- ✅ `files`: `upload`, `upload_voice` (multipart с файловой частью; транспорт расширен).
+- ✅ FastAPI: детали/приём заказа, загрузка файла (UploadFile).
+- ✅ Тесты: моки полей и multipart-загрузки (49 тестов всего).
+- ⬜ Остаток: экстры заказа (buy/accept/delete), детальные стадии (suggestion/
+  progress с метриками), арбитраж, голосовые треки/транскрипция, аватар.
 
 ## Фаза 5 — FastAPI-сервис ✅
 **Ветка:** `feature/phase-5-fastapi`

@@ -19,7 +19,7 @@ class FakeTransport:
         self.uad = "FAKEUAD"
         self.calls: list[tuple[str, dict]] = []
 
-    async def call(self, method, *, data=None, token=None, auth=True, multipart=False):
+    async def call(self, method, *, data=None, token=None, auth=True, multipart=False, files=None):
         self.calls.append((method, data or {}))
         if method not in self.responses:
             raise AssertionError(f"неожиданный вызов метода {method}")
@@ -131,7 +131,26 @@ def test_rate_limit_maps_to_429():
     assert r.status_code == 429
 
 
+def test_order_details_endpoint():
+    _override({"getOrderDetails": ok({"id": 100, "status": "work"})})
+    r = client.get("/orders/100", headers={"X-Kwork-Token": "T"})
+    assert r.status_code == 200 and r.json()["id"] == 100
+
+
+def test_file_upload_endpoint():
+    t = _override({"fileUpload": ok({"id": 7})})
+    r = client.post(
+        "/files/upload",
+        files={"file": ("doc.txt", b"data", "text/plain")},
+        headers={"X-Kwork-Token": "T"},
+    )
+    assert r.status_code == 200
+    assert t.calls[-1][0] == "fileUpload"
+
+
 def test_openapi_has_all_groups():
     spec = client.get("/openapi.json").json()
     tags = {t for path in spec["paths"].values() for op in path.values() for t in op.get("tags", [])}
-    assert {"auth", "account", "catalog", "search", "exchange", "users", "kworks", "orders", "messages"} <= tags
+    expected = {"auth", "account", "catalog", "search", "exchange", "users",
+                "kworks", "orders", "messages", "files"}
+    assert expected <= tags
