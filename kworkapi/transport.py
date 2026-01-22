@@ -91,6 +91,7 @@ class Transport:
         token: str | None = None,
         auth: bool = True,
         multipart: bool = False,
+        files: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Вызвать метод API. Возвращает распарсенный JSON-ответ целиком.
 
@@ -99,6 +100,7 @@ class Transport:
         :param token: пользовательский токен (для авторизованных запросов).
         :param auth: добавлять ли общие поля авторизации (token/slrememberme).
         :param multipart: слать ли тело как multipart/form-data (нужно части REST-методов).
+        :param files: файловые части для загрузки (httpx-формат), включают multipart.
         """
         payload: dict[str, Any] = {k: v for k, v in (data or {}).items() if v is not None}
         payload.setdefault("uad", self.uad)
@@ -110,9 +112,13 @@ class Transport:
             if slr:
                 payload.setdefault("slrememberme", slr)
 
-        # multipart: поля без файлов передаём как части (None, value)
+        # multipart: поля без файлов передаём как части (None, value); реальные файлы — как есть
         post_kwargs: dict[str, Any]
-        if multipart:
+        if files:
+            parts = {k: (None, str(v)) for k, v in payload.items()}
+            parts.update(files)
+            post_kwargs = {"files": parts}
+        elif multipart:
             post_kwargs = {"files": {k: (None, str(v)) for k, v in payload.items()}}
         else:
             post_kwargs = {"data": payload}

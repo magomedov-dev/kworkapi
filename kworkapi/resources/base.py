@@ -25,8 +25,11 @@ class Resource:
         data: dict[str, Any] | None = None,
         auth: bool = True,
         multipart: bool = False,
+        files: dict[str, Any] | None = None,
     ) -> dict:
-        return await self._client.call(method, data=data, auth=auth, multipart=multipart)
+        return await self._client.call(
+            method, data=data, auth=auth, multipart=multipart, files=files
+        )
 
     # --- разбор ответа в модели ----------------------------------------
 

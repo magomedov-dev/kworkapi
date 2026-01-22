@@ -55,7 +55,7 @@ asyncio.run(main())
 ```
 
 Ресурсы клиента: `account`, `catalog`, `search`, `exchange`, `users`, `kworks`,
-`orders`, `messages`.
+`orders`, `messages`, `files`.
 
 ## Запуск REST-сервиса (FastAPI)
 

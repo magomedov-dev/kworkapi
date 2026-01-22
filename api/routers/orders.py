@@ -26,3 +26,17 @@ async def payer_orders(
 ) -> list:
     """Заказы как покупателя."""
     return await client.orders.payer(filter=filter)
+
+
+@router.get("/{order_id}")
+async def order_details(
+    order_id: int, client: Annotated[KworkClient, Depends(get_client)]
+) -> dict:
+    """Детали заказа."""
+    return await client.orders.details(order_id)
+
+
+@router.post("/{order_id}/approve")
+async def approve(order_id: int, client: Annotated[KworkClient, Depends(get_client)]) -> dict:
+    """Принять/подтвердить заказ."""
+    return await client.orders.approve(order_id)

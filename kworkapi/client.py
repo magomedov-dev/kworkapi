@@ -9,6 +9,7 @@ from kworkapi.exceptions import KworkAuthError
 from kworkapi.resources.account import AccountResource
 from kworkapi.resources.catalog import CatalogResource
 from kworkapi.resources.exchange import ExchangeResource
+from kworkapi.resources.files import FilesResource
 from kworkapi.resources.kworks import KworksResource
 from kworkapi.resources.messages import MessagesResource
 from kworkapi.resources.orders import OrdersResource
@@ -57,6 +58,7 @@ class KworkClient:
         self.kworks = KworksResource(self)
         self.orders = OrdersResource(self)
         self.messages = MessagesResource(self)
+        self.files = FilesResource(self)
 
     @classmethod
     def from_session(cls, session: Session, **kwargs) -> "KworkClient":
@@ -95,7 +97,13 @@ class KworkClient:
     # --- низкоуровневый вызов (используется ресурсами) -------------------
 
     async def call(
-        self, method: str, *, data: dict | None = None, auth: bool = True, multipart: bool = False
+        self,
+        method: str,
+        *,
+        data: dict | None = None,
+        auth: bool = True,
+        multipart: bool = False,
+        files: dict | None = None,
     ) -> dict:
         """Вызвать метод API. При ``auth=True`` требуется активная сессия."""
         token = None
@@ -105,7 +113,7 @@ class KworkClient:
             assert self.session is not None  # гарантировано is_authenticated
             token = self.session.token
         return await self._transport.call(
-            method, data=data, token=token, auth=auth, multipart=multipart
+            method, data=data, token=token, auth=auth, multipart=multipart, files=files
         )
 
     # --- управление жизненным циклом ------------------------------------
