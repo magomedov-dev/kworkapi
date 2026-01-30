@@ -69,9 +69,15 @@ Conventional Commits на русском. Каждая фаза заканчив
 - ✅ `kworks` (чтение): `details` (getKworkDetails), `reviews`, `portfolios`.
 - ✅ `files`: `upload`, `upload_voice` (multipart с файловой частью; транспорт расширен).
 - ✅ FastAPI: детали/приём заказа, загрузка файла (UploadFile).
-- ✅ Тесты: моки полей и multipart-загрузки (49 тестов всего).
-- ⬜ Остаток: экстры заказа (buy/accept/delete), детальные стадии (suggestion/
-  progress с метриками), арбитраж, голосовые треки/транскрипция, аватар.
+- ✅ Экстры: `available_extras`, `ordered_extras`, `buy_extras`, `accept_extra`,
+  `decline_extra`, `delete_extra`.
+- ✅ Стадии: `accept_stage`, `reject_stage`, `pay_stage`, `update_stage_progress`.
+- ✅ Арбитраж/отчёты: `rate_arbitration`, `send_report`.
+- ✅ Голосовые: `voice_transcription`, `mark_voice_heard`, `voice_convert_status`,
+  `files.upload_voice`.
+- ✅ Тесты: моки полей и multipart-загрузки (54 теста всего).
+- ⬜ Мелкий остаток: аватар (updateAvatar), поток запросов на отмену
+  (confirm/reject/delete cancel request), пресеты кастомных опций.
 
 ## Фаза 5 — FastAPI-сервис ✅
 **Ветка:** `feature/phase-5-fastapi`

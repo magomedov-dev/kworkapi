@@ -72,3 +72,18 @@ class MessagesResource(Resource):
         """Поиск по сообщениям (`/searchInboxes`)."""
         data = {"text": text, "userId": user_id, "page": page}
         return await self._call("searchInboxes", data=data)
+
+    # --- голосовые сообщения -------------------------------------------
+
+    async def voice_transcription(self, conversation_id: int) -> dict:
+        """Транскрипция голосового сообщения (`/getVoiceMessageTranscription`)."""
+        data = {"conversation_id": conversation_id}
+        return await self._call("getVoiceMessageTranscription", data=data)
+
+    async def mark_voice_heard(self, conversation_id: int) -> dict:
+        """Отметить голосовое прослушанным (`/markVoiceMessageHeard`)."""
+        return await self._call("markVoiceMessageHeard", data={"conversation_id": conversation_id})
+
+    async def voice_convert_status(self, file_id: int) -> dict:
+        """Статус конвертации голосового (`/getVoiceMessageConvertStatus`)."""
+        return await self._call("getVoiceMessageConvertStatus", data={"file_id": file_id})

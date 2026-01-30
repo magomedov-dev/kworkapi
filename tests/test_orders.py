@@ -72,6 +72,62 @@ async def test_kwork_details_and_reviews():
 
 
 @respx.mock
+async def test_buy_extras_fields():
+    route = respx.post(BASE + "payerBuyExtras").mock(return_value=ok())
+    async with client() as kw:
+        await kw.orders.buy_extras(100, as_volume=2)
+        body = route.calls.last.request.content
+        assert b"order_id=100" in body and b"as_volume=2" in body
+
+
+@respx.mock
+async def test_accept_extra_and_delete():
+    ra = respx.post(BASE + "acceptExtras").mock(return_value=ok())
+    rd = respx.post(BASE + "payerExtraDelete").mock(return_value=ok())
+    async with client() as kw:
+        await kw.orders.accept_extra(100, 555)
+        await kw.orders.delete_extra(777)
+        assert b"order_id=100" in ra.calls.last.request.content
+        assert b"track_id=555" in ra.calls.last.request.content
+        assert b"extra_id=777" in rd.calls.last.request.content
+
+
+@respx.mock
+async def test_pay_stage_and_update_progress():
+    rp = respx.post(BASE + "orderStage").mock(return_value=ok())
+    ru = respx.post(BASE + "updateStageProgress").mock(return_value=ok())
+    async with client() as kw:
+        await kw.orders.pay_stage(100, 9)
+        await kw.orders.update_stage_progress(100, {9: 50, 10: 100}, comment="готово")
+        assert b"stage_id=9" in rp.calls.last.request.content
+        body = ru.calls.last.request.content
+        assert b"order_id=100" in body and b"9=50" in body and b"10=100" in body
+
+
+@respx.mock
+async def test_rate_arbitration_and_report():
+    ra = respx.post(BASE + "rateArbitration").mock(return_value=ok())
+    rr = respx.post(BASE + "sendReport").mock(return_value=ok())
+    async with client() as kw:
+        await kw.orders.rate_arbitration(42, 5)
+        await kw.orders.send_report(100, 80, comment="идёт работа")
+        assert b"id=42" in ra.calls.last.request.content
+        assert b"rating=5" in ra.calls.last.request.content
+        assert b"progress=80" in rr.calls.last.request.content
+
+
+@respx.mock
+async def test_voice_transcription_and_heard():
+    rt = respx.post(BASE + "getVoiceMessageTranscription").mock(return_value=ok({"text": "привет"}))
+    rh = respx.post(BASE + "markVoiceMessageHeard").mock(return_value=ok())
+    async with client() as kw:
+        await kw.messages.voice_transcription(529722055)
+        await kw.messages.mark_voice_heard(529722055)
+        assert b"conversation_id=529722055" in rt.calls.last.request.content
+        assert b"conversation_id=529722055" in rh.calls.last.request.content
+
+
+@respx.mock
 async def test_file_upload_multipart_with_file_part():
     route = respx.post(BASE + "fileUpload").mock(
         return_value=httpx.Response(200, json={"success": True, "response": {"id": 7}})
