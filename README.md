@@ -25,9 +25,9 @@ tests/           — тесты (моки через respx)
 
 ## Статус
 
-Фазы 0–5 готовы: библиотека (авторизация, чтение, действия) и FastAPI-сервис.
-Чтение и вход проверены на живом API. Подробности — в [`docs/`](docs/README.md),
-план — в [`docs/05-roadmap.md`](docs/05-roadmap.md).
+Релиз **0.2.0**: библиотека (авторизация, чтение, действия, заказы, файлы,
+голосовые) и FastAPI-сервис. Чтение и вход проверены на живом API. Подробности —
+в [`docs/`](docs/README.md), план — в [`docs/05-roadmap.md`](docs/05-roadmap.md).
 
 ## Установка (dev)
 
@@ -55,7 +55,7 @@ asyncio.run(main())
 ```
 
 Ресурсы клиента: `account`, `catalog`, `search`, `exchange`, `users`, `kworks`,
-`orders`, `messages`.
+`orders`, `messages`, `files`.
 
 ## Запуск REST-сервиса (FastAPI)
 

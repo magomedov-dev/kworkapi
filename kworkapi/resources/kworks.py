@@ -9,6 +9,25 @@ from kworkapi.resources.base import Resource
 
 
 class KworksResource(Resource):
+    # --- чтение деталей -------------------------------------------------
+
+    async def details(self, kwork_id: int) -> dict:
+        """Детали kwork (`/getKworkDetails`)."""
+        return self._payload(await self._call("getKworkDetails", data={"id": kwork_id}))
+
+    async def reviews(self, kwork_id: int, *, type: str = "", page: int = 1) -> dict:
+        """Отзывы о kwork (`/getKworkReviews`)."""
+        data = {"kwork_id": kwork_id, "type": type, "page": page}
+        return await self._call("getKworkReviews", data=data)
+
+    async def portfolios(self, kwork_id: int, *, page: int = 1) -> dict:
+        """Портфолио по kwork (`/getKworkPortfolios`)."""
+        return self._payload(
+            await self._call("getKworkPortfolios", data={"id": kwork_id, "page": page})
+        )
+
+    # --- управление своими kwork'ами -----------------------------------
+
     async def mark_favorite(self, kwork_id: int, favorite: bool = True) -> dict:
         """Добавить/убрать kwork из избранного (`/markKworkAsFavorite`)."""
         data = {"kwork_id": kwork_id, "is_favorite": 1 if favorite else 0}
