@@ -75,9 +75,12 @@ Conventional Commits на русском. Каждая фаза заканчив
 - ✅ Арбитраж/отчёты: `rate_arbitration`, `send_report`.
 - ✅ Голосовые: `voice_transcription`, `mark_voice_heard`, `voice_convert_status`,
   `files.upload_voice`.
-- ✅ Тесты: моки полей и multipart-загрузки (54 теста всего).
-- ⬜ Мелкий остаток: аватар (updateAvatar), поток запросов на отмену
-  (confirm/reject/delete cancel request), пресеты кастомных опций.
+- ✅ Аватар: `account.update_avatar` (multipart `/updateAvatar`).
+- ✅ Полный поток отмены заказа: `cancel_by_payer`/`cancel_by_worker` (с reason_type/
+  message), `cancellation_reasons`, `cancel_awaiting_payment`/`pay_awaiting_payment`,
+  `confirm_cancel_*`/`reject_cancel_*`/`delete_cancel_*` (payer/worker).
+- ✅ Пресеты опций: `custom_options_presets`, `offer_options`.
+- ✅ Тесты: моки полей и multipart-загрузки (58 тестов всего).
 
 ## Фаза 5 — FastAPI-сервис ✅
 **Ветка:** `feature/phase-5-fastapi`

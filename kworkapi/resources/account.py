@@ -81,3 +81,19 @@ class AccountResource(Resource):
     async def request_email_change(self, email: str) -> dict:
         """Запросить смену email (письмо подтверждения, `/emailVerificationLetter`)."""
         return await self._call("emailVerificationLetter", data={"email": email})
+
+    async def update_avatar(
+        self,
+        content: bytes,
+        filename: str = "avatar.jpg",
+        *,
+        field: str = "file",
+        content_type: str = "image/jpeg",
+    ) -> dict:
+        """Загрузить аватар профиля (`/updateAvatar`, multipart).
+
+        Имя файловой части на сервере не подтверждено захватом — по умолчанию
+        "file", можно переопределить через ``field``.
+        """
+        files = {field: (filename, content, content_type)}
+        return await self._call("updateAvatar", files=files)

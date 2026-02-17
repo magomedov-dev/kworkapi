@@ -81,15 +81,77 @@ class OrdersResource(Resource):
         data = {"orderId": order_id, "bonus": bonus, "comment": comment}
         return await self._call("sendBonus", data=data)
 
-    # --- отмена (best-effort: точные поля не подтверждены) -------------
+    # --- отмена заказа -------------------------------------------------
 
-    async def cancel_by_worker(self, order_id: int) -> dict:
-        """Отменить заказ как исполнитель (`/cancelOrderByWorker`)."""
-        return await self._call("cancelOrderByWorker", data={"orderId": order_id})
+    async def cancellation_reasons(self, order_id: int) -> dict:
+        """Доступные причины отмены заказа (`/getOrderCancellationReasons`)."""
+        return self._payload(
+            await self._call("getOrderCancellationReasons", data={"orderId": order_id})
+        )
 
-    async def cancel_by_payer(self, order_id: int) -> dict:
-        """Отменить заказ как покупатель (`/cancelOrderByPayer`)."""
-        return await self._call("cancelOrderByPayer", data={"orderId": order_id})
+    async def cancel_by_payer(
+        self, order_id: int, *, reason_type: int, message: str = "", hide_kworks: bool = False
+    ) -> dict:
+        """Запросить отмену заказа как покупатель (`/cancelOrderByPayer`)."""
+        data = {
+            "order_id": order_id,
+            "reason_type": reason_type,
+            "message": message,
+            "hideKworks": 1 if hide_kworks else 0,
+        }
+        return await self._call("cancelOrderByPayer", data=data)
+
+    async def cancel_by_worker(self, order_id: int, *, reason_type: int, message: str = "") -> dict:
+        """Запросить отмену заказа как исполнитель (`/cancelOrderByWorker`)."""
+        data = {"order_id": order_id, "reason_type": reason_type, "message": message}
+        return await self._call("cancelOrderByWorker", data=data)
+
+    async def cancel_awaiting_payment(self, order_id: int) -> dict:
+        """Отменить заказ, ожидающий оплаты (`/cancelOrderAwaitingPayment`)."""
+        return await self._call("cancelOrderAwaitingPayment", data={"order_id": order_id})
+
+    async def pay_awaiting_payment(self, order_id: int) -> dict:
+        """Оплатить заказ, ожидающий оплаты (`/payOrderAwaitingPayment`)."""
+        return await self._call("payOrderAwaitingPayment", data={"order_id": order_id})
+
+    # --- ответ на запрос отмены (встречная сторона) -------------------
+
+    async def confirm_cancel_as_payer(self, order_id: int, *, reply_type: int) -> dict:
+        """Подтвердить запрос отмены как покупатель (`/confirmCancelOrderRequestByPayer`)."""
+        data = {"order_id": order_id, "reply_type": reply_type}
+        return await self._call("confirmCancelOrderRequestByPayer", data=data)
+
+    async def confirm_cancel_as_worker(self, order_id: int) -> dict:
+        """Подтвердить запрос отмены как исполнитель (`/confirmCancelOrderRequestByWorker`)."""
+        return await self._call("confirmCancelOrderRequestByWorker", data={"order_id": order_id})
+
+    async def reject_cancel_as_payer(self, order_id: int) -> dict:
+        """Отклонить запрос отмены как покупатель (`/rejectCancelOrderRequestByPayer`)."""
+        return await self._call("rejectCancelOrderRequestByPayer", data={"order_id": order_id})
+
+    async def reject_cancel_as_worker(self, order_id: int) -> dict:
+        """Отклонить запрос отмены как исполнитель (`/rejectCancelOrderRequestByWorker`)."""
+        return await self._call("rejectCancelOrderRequestByWorker", data={"order_id": order_id})
+
+    async def delete_cancel_as_payer(self, order_id: int) -> dict:
+        """Отозвать свой запрос отмены как покупатель (`/deleteCancelOrderRequestByPayer`)."""
+        return await self._call("deleteCancelOrderRequestByPayer", data={"order_id": order_id})
+
+    async def delete_cancel_as_worker(self, order_id: int) -> dict:
+        """Отозвать свой запрос отмены как исполнитель (`/deleteCancelOrderRequestByWorker`)."""
+        return await self._call("deleteCancelOrderRequestByWorker", data={"order_id": order_id})
+
+    # --- пресеты кастомных опций (экстр) -------------------------------
+
+    async def custom_options_presets(self, order_id: int) -> dict:
+        """Пресеты кастомных опций для заказа (`/getCustomOptionsPresets`)."""
+        return self._payload(
+            await self._call("getCustomOptionsPresets", data={"order_id": order_id})
+        )
+
+    async def offer_options(self, order_id: int) -> dict:
+        """Предложить опции (экстры) по заказу (`/offerOrderOptions`)."""
+        return await self._call("offerOrderOptions", data={"orderId": order_id})
 
     # --- отзывы и ответы ----------------------------------------------
 
