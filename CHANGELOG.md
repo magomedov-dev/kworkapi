@@ -4,6 +4,24 @@
 [Keep a Changelog](https://keepachangelog.com/ru/1.1.0/),
 версионирование — [SemVer](https://semver.org/lang/ru/).
 
+## [0.3.0] — 2026-06-21
+
+Завершение работы с заказами: аватар, полный поток отмены, пресеты опций.
+
+### Добавлено
+
+- **Аватар**: `account.update_avatar` (multipart `/updateAvatar`).
+- **Полный поток отмены заказа**: `cancel_by_payer`/`cancel_by_worker`
+  (с `reason_type`/`message`/`hide_kworks`), `cancellation_reasons`,
+  `cancel_awaiting_payment`/`pay_awaiting_payment`, ответ встречной стороны
+  (`confirm_cancel_*`/`reject_cancel_*`/`delete_cancel_*` для payer/worker).
+- **Пресеты опций**: `orders.custom_options_presets`, `orders.offer_options`.
+
+### Изменено
+
+- Уточнены реальные поля `cancel_by_payer`/`cancel_by_worker` (были best-effort
+  `orderId` → стали подтверждённые `order_id`/`reason_type`/`message`).
+
 ## [0.2.0] — 2026-06-21
 
 Расширение покрытия: заказы, детали kwork, файлы, голосовые (Фаза 4b).
@@ -58,5 +76,6 @@
 - Не покрыты (план 4b): детальные операции с заказами (approve/cancel/стадии/отзывы),
   загрузка файлов/аватара, голосовые сообщения.
 
+[0.3.0]: https://example.com/kworkapi/releases/tag/v0.3.0
 [0.2.0]: https://example.com/kworkapi/releases/tag/v0.2.0
 [0.1.0]: https://example.com/kworkapi/releases/tag/v0.1.0
