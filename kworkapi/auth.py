@@ -82,6 +82,50 @@ class Auth:
             need_2fa=bool(resp.get("need_2fa", False)),
         )
 
+    async def sign_up(
+        self,
+        username: str,
+        email: str,
+        password: str,
+        *,
+        type: str = "worker",
+        promocode: str = "",
+        recaptcha_response: str = "",
+        is_subscribed: int = 0,
+    ) -> Session:
+        """Зарегистрироваться (`/signUp`). Возвращает Session с токеном."""
+        body = await self._transport.call(
+            "signUp",
+            data={
+                "username": username,
+                "email": email,
+                "password": password,
+                "type": type,
+                "promocode": promocode,
+                "g-recaptcha-response": recaptcha_response,
+                "is_subscribed": is_subscribed,
+            },
+            auth=False,
+        )
+        resp = body.get("response") if isinstance(body, dict) else None
+        if not isinstance(resp, dict) or not resp.get("token"):
+            raise KworkAuthError("В ответе /signUp не найден token", payload=body)
+        return Session(
+            token=resp["token"],
+            uad=self._transport.uad,
+            slrememberme=self._transport.current_slrememberme(),
+            expired=resp.get("expired"),
+            need_2fa=bool(resp.get("need_2fa", False)),
+        )
+
+    async def reset_password(self, email: str, *, recaptcha_response: str = "") -> dict:
+        """Запросить сброс пароля письмом (`/resetPassword`)."""
+        return await self._transport.call(
+            "resetPassword",
+            data={"email": email, "g-recaptcha-response": recaptcha_response},
+            auth=False,
+        )
+
     async def logout(self, *, push_token: str = "") -> bool:
         """Выйти на сервере (инвалидировать сессию)."""
         body = await self._transport.call("logout", data={"pushToken": push_token})

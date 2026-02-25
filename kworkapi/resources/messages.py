@@ -87,3 +87,31 @@ class MessagesResource(Resource):
     async def voice_convert_status(self, file_id: int) -> dict:
         """Статус конвертации голосового (`/getVoiceMessageConvertStatus`)."""
         return await self._call("getVoiceMessageConvertStatus", data={"file_id": file_id})
+
+    # --- прочее --------------------------------------------------------
+
+    async def get_message(self, conversation_id: int) -> dict:
+        """Получить одно сообщение по conversation_id (`/inboxTrackMessage`)."""
+        return self._payload(
+            await self._call("inboxTrackMessage", data={"conversationId": conversation_id})
+        )
+
+    async def complain(self, message_id: int, comment: str) -> dict:
+        """Пожаловаться на сообщение (`/inboxComplainMessage`)."""
+        data = {"message_id": message_id, "comment": comment}
+        return await self._call("inboxComplainMessage", data=data)
+
+    async def mark_tracks_read(self, user_id: int, conversation_ids: list[int]) -> dict:
+        """Отметить сообщения прочитанными (`/markInboxTracksAsRead`)."""
+        data = {"userId": user_id, "conversationIds[]": conversation_ids}
+        return await self._call("markInboxTracksAsRead", data=data)
+
+    async def hide_dialog(self, user_id: int, *, restore: bool = False) -> dict:
+        """Скрыть/восстановить диалог (`/hideDialog`)."""
+        data = {"userId": user_id, "isRestore": 1 if restore else 0}
+        return await self._call("hideDialog", data=data)
+
+    async def send_status(self, user_id: int, *, order_id: int = 0, status: str = "typing") -> dict:
+        """Отправить статус взаимодействия (печатает и т.п., `/sendUserStatus`)."""
+        data = {"user_id": user_id, "orderId": order_id, "status": status}
+        return await self._call("sendUserStatus", data=data)

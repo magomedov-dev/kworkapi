@@ -12,8 +12,11 @@ from kworkapi.resources.exchange import ExchangeResource
 from kworkapi.resources.files import FilesResource
 from kworkapi.resources.kworks import KworksResource
 from kworkapi.resources.messages import MessagesResource
+from kworkapi.resources.misc import MiscResource
 from kworkapi.resources.orders import OrdersResource
+from kworkapi.resources.portfolio import PortfolioResource
 from kworkapi.resources.search import SearchResource
+from kworkapi.resources.tracks import TracksResource
 from kworkapi.resources.users import UsersResource
 from kworkapi.transport import Transport
 
@@ -59,6 +62,9 @@ class KworkClient:
         self.orders = OrdersResource(self)
         self.messages = MessagesResource(self)
         self.files = FilesResource(self)
+        self.portfolio = PortfolioResource(self)
+        self.tracks = TracksResource(self)
+        self.misc = MiscResource(self)
 
     @classmethod
     def from_session(cls, session: Session, **kwargs) -> "KworkClient":
@@ -79,6 +85,33 @@ class KworkClient:
             login, password, recaptcha_pass_token=recaptcha_pass_token
         )
         return self.session
+
+    async def register(
+        self,
+        username: str,
+        email: str,
+        password: str,
+        *,
+        type: str = "worker",
+        promocode: str = "",
+        recaptcha_response: str = "",
+        is_subscribed: int = 0,
+    ) -> Session:
+        """Зарегистрироваться и сохранить сессию в клиенте."""
+        self.session = await self._auth.sign_up(
+            username,
+            email,
+            password,
+            type=type,
+            promocode=promocode,
+            recaptcha_response=recaptcha_response,
+            is_subscribed=is_subscribed,
+        )
+        return self.session
+
+    async def reset_password(self, email: str, *, recaptcha_response: str = "") -> dict:
+        """Запросить сброс пароля письмом (без авторизации)."""
+        return await self._auth.reset_password(email, recaptcha_response=recaptcha_response)
 
     async def logout(self, *, push_token: str = "") -> bool:
         """Выйти на сервере и очистить локальную сессию."""
