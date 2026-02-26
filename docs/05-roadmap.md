@@ -116,6 +116,26 @@ Conventional Commits на русском. Каждая фаза заканчив
 
 ---
 
+## Фаза 8 — Полное покрытие API ✅
+**Ветка:** `feature/phase-8-completeness`
+- ✅ `account`: телефон (add/verify/whatsapp), удаление аккаунта, компания/yescrow,
+  баланс (bill_refill_url, set_notify_card_refill), push (allow/register/received),
+  голосовые настройки, роль/самозанятость/выходные, гео (countries/cities/timezones),
+  public_features/captcha_status/web_auth_token/is_dialog_allowed.
+- ✅ `auth`: регистрация (`register`), сброс пароля (`reset_password`).
+- ✅ `users`: kworks_categories, kworks_statuses, blocked_dialogs.
+- ✅ `exchange`: get_offer, projects_count (с фильтрами), set_favorite_categories.
+- ✅ `kworks`: details_extra, faq, links_table, complain_categories, recharge_balance.
+- ✅ `messages`: get_message, complain, mark_tracks_read, hide_dialog, send_status.
+- ✅ `orders`: worker_in_progress, allow/delete_portfolio, edit_answer, send_receipt,
+  экстры исполнителя (decline/delete) и поток удаления экстры (accept/decline).
+- ✅ Новые ресурсы: `portfolio` (categories/list), `tracks` (list/search/edit/delete/
+  read), `misc` (tos/terms/privacy/resolution/in_app_notification).
+- ✅ **12 ресурсов, 166 публичных методов**, 68 тестов, покрытие 84%.
+- ⬜ Сознательно опущены методы с JSON-телом (`@Body`), форму которого не дал захват:
+  deleteWant/stopWant/restartWant/wantsStatusList, orderKwork, createKworkComplain,
+  socialSignIn — добавятся при появлении образца тела.
+
 ## Сквозные правила
 - **gitflow**: фичи → `develop`, релизы → `main`, теги semver.
 - **Коммиты**: Conventional Commits (`feat:`/`fix:`/`docs:`/`refactor:`/`test:`/`chore:`),

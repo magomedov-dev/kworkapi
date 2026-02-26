@@ -97,3 +97,123 @@ class AccountResource(Resource):
         """
         files = {field: (filename, content, content_type)}
         return await self._call("updateAvatar", files=files)
+
+    # --- телефон -------------------------------------------------------
+
+    async def add_phone(self, phone: str) -> dict:
+        """Привязать номер телефона (`/addPhoneNumber`)."""
+        return await self._call("addPhoneNumber", data={"phone": phone})
+
+    async def verify_phone(self, code: str) -> dict:
+        """Подтвердить телефон кодом активации (`/verifyPhoneActivationCode`)."""
+        return await self._call("verifyPhoneActivationCode", data={"code": code})
+
+    async def send_whatsapp_code(self, phone: str, *, hash: str = "") -> dict:
+        """Отправить код подтверждения в WhatsApp (`/sendWhatsAppCode`)."""
+        return await self._call("sendWhatsAppCode", data={"phone": phone, "hash": hash})
+
+    # --- удаление аккаунта ---------------------------------------------
+
+    async def delete_account(self) -> dict:
+        """Запросить удаление аккаунта (`/deleteAccount`)."""
+        return await self._call("deleteAccount")
+
+    async def verify_delete_code(self, code: str) -> dict:
+        """Подтвердить удаление аккаунта SMS-кодом (`/verifySmsCodeForAccountDeleting`)."""
+        return await self._call("verifySmsCodeForAccountDeleting", data={"code": code})
+
+    # --- компания / yescrow --------------------------------------------
+
+    async def company_info(self, tax_number: str) -> dict:
+        """Данные компании по ИНН (`/getCompanyDetails`)."""
+        return self._payload(await self._call("getCompanyDetails", data={"tax_number": tax_number}))
+
+    async def verify_company(self, tax_number: str, address: str) -> dict:
+        """Отправить компанию на верификацию (`/sendCompanyForVerification`)."""
+        data = {"tax_number": tax_number, "address": address}
+        return await self._call("sendCompanyForVerification", data=data)
+
+    async def change_payer_sub_role(self, payer_sub_role: int) -> dict:
+        """Сменить подроль покупателя (физлицо/компания, `/changePayerSubRole`)."""
+        return await self._call("changePayerSubRole", data={"payerSubRole": payer_sub_role})
+
+    # --- баланс / оплата -----------------------------------------------
+
+    async def bill_refill_url(self, amount: float) -> dict:
+        """Ссылка на пополнение баланса (`/getBillRefillUrl`)."""
+        return self._payload(await self._call("getBillRefillUrl", data={"sum": amount}))
+
+    async def set_notify_card_refill(self, flag: int) -> dict:
+        """Уведомлять о пополнении картой (`/setNotifyCardRefill`)."""
+        return await self._call("setNotifyCardRefill", data={"flag": flag})
+
+    # --- push / уведомления --------------------------------------------
+
+    async def allow_mobile_push(self, allow: int) -> dict:
+        """Разрешить мобильные пуши (`/allowMobilePush`)."""
+        return await self._call("allowMobilePush", data={"allow": allow})
+
+    async def register_push_token(self, cloud_token: str, *, os: str = "android", app_version: str = "") -> dict:
+        """Зарегистрировать FCM/push-токен (`/registerCloudToken`)."""
+        data = {"cloud_token": cloud_token, "os": os, "app_version": app_version}
+        return await self._call("registerCloudToken", data=data)
+
+    async def notifications_received(self, ids: list[int], *, make_online: int = 0) -> dict:
+        """Отметить уведомления полученными (`/notificationsReceived`)."""
+        return await self._call("notificationsReceived", data={"ids[]": ids, "makeOnline": make_online})
+
+    # --- голосовые настройки -------------------------------------------
+
+    async def set_voice_receiving(self, is_allowed: int) -> dict:
+        """Разрешить приём голосовых (`/setVoiceMessageReceiving`)."""
+        return await self._call("setVoiceMessageReceiving", data={"is_allowed": is_allowed})
+
+    async def set_voice_speed(self, speed: float) -> dict:
+        """Скорость воспроизведения голосовых (`/setVoiceMessageSpeed`)."""
+        return await self._call("setVoiceMessageSpeed", data={"speed": speed})
+
+    # --- прочее --------------------------------------------------------
+
+    async def set_user_type(self, type: int) -> dict:
+        """Переключить роль (исполнитель/покупатель, `/setUserType`)."""
+        return await self._call("setUserType", data={"type": type})
+
+    async def set_available_at_weekends(self, available: bool) -> dict:
+        """Доступность по выходным (`/setAvailableAtWeekends`)."""
+        return await self._call("setAvailableAtWeekends", data={"available": available})
+
+    async def self_employed_survey(self, answer: int) -> dict:
+        """Ответ опроса самозанятости (`/sendSelfEmployedSurveyResult`)."""
+        return await self._call("sendSelfEmployedSurveyResult", data={"answer": answer})
+
+    async def public_features(self) -> dict:
+        """Публичные фичи (без авторизации, `/getPublicFeatures`)."""
+        return self._payload(await self._call("getPublicFeatures", auth=False))
+
+    async def captcha_status(self) -> dict:
+        """Статус капчи (`/getCaptchaStatus`)."""
+        return self._payload(await self._call("getCaptchaStatus"))
+
+    async def web_auth_token(self, url_to_redirect: str = "") -> dict:
+        """Токен для авторизованного открытия веб-страниц (`/getWebAuthToken`)."""
+        return self._payload(
+            await self._call("getWebAuthToken", data={"url_to_redirect": url_to_redirect})
+        )
+
+    async def is_dialog_allowed(self, receiver_id: int) -> dict:
+        """Можно ли писать пользователю (`/isDialogAllow`)."""
+        return self._payload(await self._call("isDialogAllow", data={"receiverId": receiver_id}))
+
+    # --- география -----------------------------------------------------
+
+    async def countries(self) -> dict:
+        """Список стран (`/countries`)."""
+        return self._payload(await self._call("countries"))
+
+    async def cities(self, country_id: int) -> dict:
+        """Города страны (`/cities`)."""
+        return self._payload(await self._call("cities", data={"countryId": country_id}))
+
+    async def timezones(self) -> dict:
+        """Список часовых поясов (`/timezones`)."""
+        return self._payload(await self._call("timezones"))

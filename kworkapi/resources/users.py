@@ -26,3 +26,15 @@ class UsersResource(Resource):
         """Отзывы о пользователе (`/userReviews`)."""
         data = {"user_id": user_id, "type": type, "page": page}
         return await self._call("userReviews", data=data)
+
+    async def kworks_categories(self, user_id: int) -> dict:
+        """Категории kwork'ов пользователя (`/kworksCategoriesList`)."""
+        return self._payload(await self._call("kworksCategoriesList", data={"user_id": user_id}))
+
+    async def kworks_statuses(self) -> dict:
+        """Список возможных статусов kwork (`/kworksStatusList`)."""
+        return self._payload(await self._call("kworksStatusList"))
+
+    async def blocked_dialogs(self, *, page: int = 1) -> dict:
+        """Список заблокированных диалогов (`/blockedDialogs`)."""
+        return await self._call("blockedDialogs", data={"page": page})

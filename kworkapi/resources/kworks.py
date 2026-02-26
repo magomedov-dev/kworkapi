@@ -26,6 +26,41 @@ class KworksResource(Resource):
             await self._call("getKworkPortfolios", data={"id": kwork_id, "page": page})
         )
 
+    async def details_extra(self, kwork_id: int) -> dict:
+        """Доп. детали kwork (`/getKworkDetailsExtra`)."""
+        return self._payload(await self._call("getKworkDetailsExtra", data={"id": kwork_id}))
+
+    async def faq(self, kwork_id: int) -> dict:
+        """Вопросы-ответы по kwork (`/getKworkAnswers`)."""
+        return self._payload(await self._call("getKworkAnswers", data={"id": kwork_id}))
+
+    async def links_table(self, kwork_id: int, *, page: int = 1) -> dict:
+        """Таблица доменов/ссылок kwork (`/getKworkLinksTable`)."""
+        return await self._call("getKworkLinksTable", data={"id": kwork_id, "page": page})
+
+    async def complain_categories(self) -> dict:
+        """Категории жалоб на kwork (`/getComplainCategories`)."""
+        return self._payload(await self._call("getComplainCategories"))
+
+    async def recharge_balance(
+        self,
+        order_id: int,
+        amount: float,
+        *,
+        payment_id: str = "",
+        payment_type: str = "",
+        country_group_code: str = "",
+    ) -> dict:
+        """Пополнить баланс для оплаты заказа (`/rechargeBalance`)."""
+        data = {
+            "orderId": order_id,
+            "amount": amount,
+            "payment_id": payment_id,
+            "paymentType": payment_type,
+            "country_group_code": country_group_code,
+        }
+        return await self._call("rechargeBalance", data=data)
+
     # --- управление своими kwork'ами -----------------------------------
 
     async def mark_favorite(self, kwork_id: int, favorite: bool = True) -> dict:

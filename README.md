@@ -17,7 +17,8 @@ kworkapi/        — библиотека-обёртка (ядро)
   client.py      — KworkClient: сессия + доступ к группам методов (ресурсам)
   auth.py        — авторизация (signIn), хранение токена
   models/        — pydantic-модели ответов
-  resources/     — группы методов: catalog, projects, orders, messages, account
+  resources/     — группы методов: account, catalog, search, exchange, users,
+                   kworks, orders, messages, files, portfolio, tracks, misc
 api/             — FastAPI-сервис поверх библиотеки (REST + Swagger наружу)
 research/        — артефакты реверса: инструкция по захвату + карта эндпоинтов
 tests/           — тесты (моки через respx)
@@ -25,15 +26,25 @@ tests/           — тесты (моки через respx)
 
 ## Статус
 
-Релиз **0.3.0**: библиотека (авторизация, чтение, действия, полный жизненный цикл
-заказов, файлы, голосовые, аватар) и FastAPI-сервис. Чтение и вход проверены на
-живом API. Подробности — в [`docs/`](docs/README.md), план — в
-[`docs/05-roadmap.md`](docs/05-roadmap.md).
+Релиз **0.4.0**: полное покрытие API — **12 ресурсов, 166 методов** (авторизация и
+регистрация, каталог, поиск, биржа, профили, kwork'и, полный жизненный цикл заказов,
+сообщения и голосовые, файлы, портфолио, треки, настройки, гео, правовые страницы) +
+FastAPI-сервис. Чтение и вход проверены на живом API. Подробности — в
+[`docs/`](docs/README.md), план — в [`docs/05-roadmap.md`](docs/05-roadmap.md).
 
-## Установка (dev)
+## Документация
+
+Полное руководство пользователя (установка, авторизация, все ресурсы с примерами,
+обработка ошибок, REST-сервис) — в **[`docs/07-usage.md`](docs/07-usage.md)**.
+Остальная документация (реверс, справочник API, архитектура, roadmap) — в
+[`docs/`](docs/README.md).
+
+## Установка
 
 ```bash
-python -m venv .venv && source .venv/bin/activate.fish  # fish: source .venv/bin/activate.fish
+git clone https://github.com/magomedov-dev/kworkapi.git
+cd kworkapi
+python -m venv .venv && source .venv/bin/activate.fish  # bash: source .venv/bin/activate
 pip install -e ".[server,dev]"
 ```
 
@@ -56,7 +67,7 @@ asyncio.run(main())
 ```
 
 Ресурсы клиента: `account`, `catalog`, `search`, `exchange`, `users`, `kworks`,
-`orders`, `messages`, `files`.
+`orders`, `messages`, `files`, `portfolio`, `tracks`, `misc`.
 
 ## Запуск REST-сервиса (FastAPI)
 
@@ -77,5 +88,6 @@ uvicorn api.main:app --reload
 - [x] Фаза 3 — чтение: аккаунт, каталог, поиск, биржа, пользователи (+ модели)
 - [x] Фаза 4 — действия: сообщения, отклики, настройки, kwork'и
 - [x] Фаза 5 — FastAPI-обёртка
-- [ ] Фаза 6 — надёжность: троттлинг, типизация, CI
-- [ ] Фаза 7 — релиз
+- [x] Фаза 6 — надёжность: троттлинг, типизация, CI
+- [x] Фаза 7 — релиз (semver, теги)
+- [x] Фаза 8 — полное покрытие API (12 ресурсов, 166 методов)

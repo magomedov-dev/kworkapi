@@ -153,6 +153,48 @@ class OrdersResource(Resource):
         """Предложить опции (экстры) по заказу (`/offerOrderOptions`)."""
         return await self._call("offerOrderOptions", data={"orderId": order_id})
 
+    # --- исполнитель: статус, портфолио, чек, ответы ------------------
+
+    async def worker_in_progress(self, order_id: int, *, contracts_agreement: int = 1) -> dict:
+        """Взять заказ в работу как исполнитель (`/workerInprogress`)."""
+        data = {"order_id": order_id, "contracts_agreement": contracts_agreement}
+        return await self._call("workerInprogress", data=data)
+
+    async def allow_portfolio(self, order_id: int) -> dict:
+        """Разрешить загрузку портфолио по заказу (`/allowOrderPortfolioUpload`)."""
+        return await self._call("allowOrderPortfolioUpload", data={"order_id": order_id})
+
+    async def delete_portfolio(self, portfolio_id: int, *, unlink: int = 0) -> dict:
+        """Удалить портфолио (`/deletePortfolio`)."""
+        return await self._call("deletePortfolio", data={"portfolio_id": portfolio_id, "unlink": unlink})
+
+    async def edit_answer(self, answer_id: int, text: str) -> dict:
+        """Изменить ответ на отзыв (`/editAnswer`)."""
+        return await self._call("editAnswer", data={"answer_id": answer_id, "text": text})
+
+    async def send_receipt(self, receipt_id: int, receipt_link: str) -> dict:
+        """Отправить ссылку на чек для верификации (`/sendOrderReceiptLinkForVerification`)."""
+        data = {"receiptId": receipt_id, "receiptLink": receipt_link}
+        return await self._call("sendOrderReceiptLinkForVerification", data=data)
+
+    # --- экстры со стороны исполнителя --------------------------------
+
+    async def worker_decline_extra(self, order_id: int, track_id: int) -> dict:
+        """Отклонить экстру как исполнитель (`/workerDeclineExtras`)."""
+        return await self._call("workerDeclineExtras", data={"order_id": order_id, "track_id": track_id})
+
+    async def worker_delete_extra(self, extra_id: int) -> dict:
+        """Удалить экстру как исполнитель (`/workerExtraDelete`)."""
+        return await self._call("workerExtraDelete", data={"extra_id": extra_id})
+
+    async def accept_extra_removal(self, track_id: int) -> dict:
+        """Подтвердить запрос на удаление экстры (`/workerConfirmsExtraRemovalRequest`)."""
+        return await self._call("workerConfirmsExtraRemovalRequest", data={"track_id": track_id})
+
+    async def decline_extra_removal(self, track_id: int) -> dict:
+        """Отклонить запрос на удаление экстры (`/workerDeclinesExtraRemovalRequest`)."""
+        return await self._call("workerDeclinesExtraRemovalRequest", data={"track_id": track_id})
+
     # --- отзывы и ответы ----------------------------------------------
 
     async def create_review(self, order_id: int, *, positive: bool, text: str) -> dict:

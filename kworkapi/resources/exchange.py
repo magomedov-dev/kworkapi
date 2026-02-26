@@ -103,3 +103,32 @@ class ExchangeResource(Resource):
     async def delete_offer(self, offer_id: int) -> dict:
         """Удалить отклик (`/api/offer/deleteoffer`)."""
         return await self._call("api/offer/deleteoffer", data={"id": offer_id})
+
+    async def get_offer(self, offer_id: int) -> Offer:
+        """Детали отклика (`/offer`)."""
+        return self._model(await self._call("offer", data={"id": offer_id}), Offer)
+
+    async def projects_count(
+        self,
+        *,
+        categories: str = "all",
+        attributes: str = "",
+        price_from: int | None = None,
+        price_to: int | None = None,
+        hiring_from: int | None = None,
+        offers: str = "",
+    ) -> dict:
+        """Число доступных проектов по фильтрам (`/getWantsCount`)."""
+        data = {
+            "categories": categories,
+            "attributes": attributes,
+            "price_from": price_from,
+            "price_to": price_to,
+            "hiring_from": hiring_from,
+            "offers": offers,
+        }
+        return self._payload(await self._call("getWantsCount", data=data))
+
+    async def set_favorite_categories(self, categories: str, *, attributes: str = "") -> dict:
+        """Сохранить избранные категории биржи (`/setFavorite`)."""
+        return await self._call("setFavorite", data={"categories": categories, "attributes": attributes})
