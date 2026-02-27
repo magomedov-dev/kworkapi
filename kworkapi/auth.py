@@ -11,7 +11,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, cast
 
 from kworkapi.exceptions import KworkAuthError
 
@@ -34,11 +34,11 @@ class Session:
     def is_authenticated(self) -> bool:
         return bool(self.token)
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: dict) -> "Session":
+    def from_dict(cls, data: dict[str, Any]) -> Session:
         fields = {"token", "uad", "slrememberme", "expired", "user_id", "need_2fa"}
         return cls(**{k: v for k, v in data.items() if k in fields})
 
@@ -70,16 +70,18 @@ class Auth:
             auth=False,
         )
 
-        resp = body.get("response") if isinstance(body, dict) else None
-        if not isinstance(resp, dict) or not resp.get("token"):
+        resp: Any = body.get("response")
+        if not isinstance(resp, dict):
             raise KworkAuthError("В ответе /signIn не найден token", payload=body)
-
+        data = cast("dict[str, Any]", resp)
+        if not data.get("token"):
+            raise KworkAuthError("В ответе /signIn не найден token", payload=body)
         return Session(
-            token=resp["token"],
+            token=data["token"],
             uad=self._transport.uad,
             slrememberme=self._transport.current_slrememberme(),
-            expired=resp.get("expired"),
-            need_2fa=bool(resp.get("need_2fa", False)),
+            expired=data.get("expired"),
+            need_2fa=bool(data.get("need_2fa", False)),
         )
 
     async def sign_up(
@@ -107,18 +109,21 @@ class Auth:
             },
             auth=False,
         )
-        resp = body.get("response") if isinstance(body, dict) else None
-        if not isinstance(resp, dict) or not resp.get("token"):
+        resp: Any = body.get("response")
+        if not isinstance(resp, dict):
+            raise KworkAuthError("В ответе /signUp не найден token", payload=body)
+        data = cast("dict[str, Any]", resp)
+        if not data.get("token"):
             raise KworkAuthError("В ответе /signUp не найден token", payload=body)
         return Session(
-            token=resp["token"],
+            token=data["token"],
             uad=self._transport.uad,
             slrememberme=self._transport.current_slrememberme(),
-            expired=resp.get("expired"),
-            need_2fa=bool(resp.get("need_2fa", False)),
+            expired=data.get("expired"),
+            need_2fa=bool(data.get("need_2fa", False)),
         )
 
-    async def reset_password(self, email: str, *, recaptcha_response: str = "") -> dict:
+    async def reset_password(self, email: str, *, recaptcha_response: str = "") -> dict[str, Any]:
         """Запросить сброс пароля письмом (`/resetPassword`)."""
         return await self._transport.call(
             "resetPassword",
@@ -129,4 +134,4 @@ class Auth:
     async def logout(self, *, push_token: str = "") -> bool:
         """Выйти на сервере (инвалидировать сессию)."""
         body = await self._transport.call("logout", data={"pushToken": push_token})
-        return bool(body.get("success", True)) if isinstance(body, dict) else True
+        return bool(body.get("success", True))

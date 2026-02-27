@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from kworkapi.models.base import KworkModel
 from kworkapi.models.common import Cover, Worker
 
@@ -28,7 +30,7 @@ class Kwork(KworkModel):
     lang: str | None = None
     classifier_id: int | None = None
     worker: Worker | None = None
-    badges: list = []
+    badges: list[Any] = []
 
 
 class KworksResult(KworkModel):

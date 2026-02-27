@@ -6,6 +6,8 @@ multipart с файловой частью (FileService.fileUpload/voiceUpload).
 
 from __future__ import annotations
 
+from typing import Any
+
 from kworkapi.resources.base import Resource
 
 
@@ -17,7 +19,7 @@ class FilesResource(Resource):
         *,
         field: str = "file",
         content_type: str = "application/octet-stream",
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Загрузить файл-вложение (`/fileUpload`)."""
         files = {field: (filename, content, content_type)}
         return await self._call("fileUpload", files=files)
@@ -29,7 +31,7 @@ class FilesResource(Resource):
         *,
         field: str = "file",
         content_type: str = "audio/ogg",
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Загрузить голосовое сообщение (`/voiceUpload`)."""
         files = {field: (filename, content, content_type)}
         return await self._call("voiceUpload", files=files)

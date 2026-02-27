@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import Any
+from typing import Any, cast
 
 import httpx
 
@@ -82,6 +82,10 @@ class Transport:
     def current_slrememberme(self) -> str:
         """Текущее значение cookie slrememberme (после /signIn), либо пустая строка."""
         return self._client.cookies.get("slrememberme", "") or ""
+
+    def set_cookie(self, name: str, value: str) -> None:
+        """Установить cookie в общий cookie-jar клиента."""
+        self._client.cookies.set(name, value)
 
     async def call(
         self,
@@ -174,7 +178,7 @@ class Transport:
 
     def _parse(self, method: str, response: httpx.Response) -> dict[str, Any]:
         try:
-            body = response.json()
+            raw: Any = response.json()
         except ValueError as exc:
             raise KworkAPIError(
                 f"Не-JSON ответ от {method} (HTTP {response.status_code})",
@@ -182,10 +186,13 @@ class Transport:
                 payload=response.text[:500],
             ) from exc
 
+        # Верхний уровень ответа kwork — всегда JSON-объект; иначе оборачиваем.
+        body: dict[str, Any] = cast("dict[str, Any]", raw) if isinstance(raw, dict) else {"response": raw}
+
         # Признак ошибки — success=false (часть эндпоинтов поле не возвращает вовсе).
-        if isinstance(body, dict) and body.get("success") is False:
+        if body.get("success") is False:
             message = str(body.get("error") or body.get("message") or "Ошибка API")
-            code = body.get("error_code") or body.get("code")
+            code: Any = body.get("error_code") or body.get("code")
             if self._looks_like_auth_error(message, code):
                 raise KworkAuthError(message, code=code, payload=body)
             raise KworkAPIError(message, code=code, payload=body)

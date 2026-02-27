@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from types import TracebackType
+from typing import Any
 
 from kworkapi.auth import Auth, Session
 from kworkapi.exceptions import KworkAuthError
@@ -40,7 +41,7 @@ class KworkClient:
         *,
         session: Session | None = None,
         transport: Transport | None = None,
-        **transport_kwargs,
+        **transport_kwargs: Any,
     ) -> None:
         # uad сессии имеет приоритет: запросы должны идти с тем же идентификатором.
         if session and transport is None and "uad" not in transport_kwargs:
@@ -50,7 +51,7 @@ class KworkClient:
         self.session = session
         if session and session.slrememberme:
             # вернём cookie, чтобы авторизованные запросы её отправляли
-            self._transport._client.cookies.set("slrememberme", session.slrememberme)
+            self._transport.set_cookie("slrememberme", session.slrememberme)
 
         # Группы методов (ресурсы).
         self.account = AccountResource(self)
@@ -67,7 +68,7 @@ class KworkClient:
         self.misc = MiscResource(self)
 
     @classmethod
-    def from_session(cls, session: Session, **kwargs) -> "KworkClient":
+    def from_session(cls, session: Session, **kwargs: Any) -> KworkClient:
         """Создать клиент из сохранённой сессии (token + uad + slrememberme)."""
         return cls(session=session, **kwargs)
 
@@ -109,7 +110,7 @@ class KworkClient:
         )
         return self.session
 
-    async def reset_password(self, email: str, *, recaptcha_response: str = "") -> dict:
+    async def reset_password(self, email: str, *, recaptcha_response: str = "") -> dict[str, Any]:
         """Запросить сброс пароля письмом (без авторизации)."""
         return await self._auth.reset_password(email, recaptcha_response=recaptcha_response)
 
@@ -133,11 +134,11 @@ class KworkClient:
         self,
         method: str,
         *,
-        data: dict | None = None,
+        data: dict[str, Any] | None = None,
         auth: bool = True,
         multipart: bool = False,
-        files: dict | None = None,
-    ) -> dict:
+        files: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """Вызвать метод API. При ``auth=True`` требуется активная сессия."""
         token = None
         if auth:
@@ -154,7 +155,7 @@ class KworkClient:
     async def aclose(self) -> None:
         await self._transport.aclose()
 
-    async def __aenter__(self) -> "KworkClient":
+    async def __aenter__(self) -> KworkClient:
         return self
 
     async def __aexit__(

@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from typing import Generic, TypeVar
-
-from pydantic import BaseModel
+from collections.abc import Iterator
+from dataclasses import dataclass
+from typing import Any, Generic, TypeVar
 
 from kworkapi.models.base import KworkModel
 
@@ -41,15 +41,31 @@ class Worker(KworkModel):
     level_description: str | None = None
 
 
-class Page(BaseModel, Generic[T]):
-    """Страница результатов: элементы + пагинация (+ опц. общее число)."""
+@dataclass
+class Page(Generic[T]):
+    """Страница результатов: элементы + пагинация (+ опц. общее число).
+
+    Поддерживает итерацию (``for x in page``) и ``len(page)``.
+    """
 
     items: list[T]
     paging: Paging | None = None
     total: int | None = None
 
-    def __iter__(self):  # удобный обход элементов
+    def __iter__(self) -> Iterator[T]:
         return iter(self.items)
 
     def __len__(self) -> int:
         return len(self.items)
+
+    def model_dump(self) -> dict[str, Any]:
+        """Сериализовать страницу в обычный словарь (для JSON-ответов)."""
+        dumped: list[Any] = []
+        for item in self.items:
+            dump = getattr(item, "model_dump", None)
+            dumped.append(dump() if callable(dump) else item)
+        return {
+            "items": dumped,
+            "paging": self.paging.model_dump() if self.paging is not None else None,
+            "total": self.total,
+        }

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar, cast
 
 from kworkapi.models.common import Page, Paging
 
@@ -15,7 +15,7 @@ T = TypeVar("T")
 class Resource:
     """Группа методов API. Делегирует низкоуровневые вызовы клиенту."""
 
-    def __init__(self, client: "KworkClient") -> None:
+    def __init__(self, client: KworkClient) -> None:
         self._client = client
 
     async def _call(
@@ -26,7 +26,7 @@ class Resource:
         auth: bool = True,
         multipart: bool = False,
         files: dict[str, Any] | None = None,
-    ) -> dict:
+    ) -> dict[str, Any]:
         return await self._client.call(
             method, data=data, auth=auth, multipart=multipart, files=files
         )
@@ -34,38 +34,45 @@ class Resource:
     # --- разбор ответа в модели ----------------------------------------
 
     @staticmethod
-    def _payload(body: dict) -> Any:
-        """Полезная нагрузка: содержимое `response` (или весь body, если его нет)."""
-        if isinstance(body, dict) and "response" in body:
+    def _payload(body: dict[str, Any]) -> Any:
+        """Полезная нагрузка: содержимое ``response`` (или весь body, если его нет)."""
+        if "response" in body:
             return body["response"]
         return body
 
-    def _model(self, body: dict, model: type[T]) -> T:
+    def _model(self, body: dict[str, Any], model: type[T]) -> T:
         """Распарсить полезную нагрузку в одну модель."""
-        return model(**self._payload(body))
+        payload: Any = self._payload(body)
+        return model(**payload)
 
-    def _list(self, body: dict, model: type[T]) -> list[T]:
+    def _list(self, body: dict[str, Any], model: type[T]) -> list[T]:
         """Распарсить полезную нагрузку-список в список моделей."""
-        payload = self._payload(body)
-        return [model(**x) for x in (payload or [])]
+        payload: Any = self._payload(body)
+        raw: list[Any] = cast("list[Any]", payload) if isinstance(payload, list) else []
+        return [model(**item) for item in raw]
 
     def _page(
-        self, body: dict, model: type[T], *, items_key: str | None = None
+        self, body: dict[str, Any], model: type[T], *, items_key: str | None = None
     ) -> Page[T]:
-        """Собрать страницу: элементы (из response или response[items_key]) + paging.
+        """Собрать страницу: элементы (из ``response`` или ``response[items_key]``) + paging.
 
         :param items_key: если элементы лежат в подполе response (например "kworks").
         """
-        payload = self._payload(body)
+        payload: Any = self._payload(body)
+        total: int | None = None
+        raw: list[Any]
         if items_key and isinstance(payload, dict):
-            raw_items = payload.get(items_key, [])
-            total = payload.get(f"{items_key}_count")
+            src = cast("dict[str, Any]", payload)
+            raw = src.get(items_key) or []
+            count = src.get(f"{items_key}_count")
+            total = count if isinstance(count, int) else None
+        elif isinstance(payload, list):
+            raw = cast("list[Any]", payload)
         else:
-            raw_items = payload if isinstance(payload, list) else []
-            total = None
-        items = [model(**x) for x in (raw_items or [])]
-        paging_raw = body.get("paging") if isinstance(body, dict) else None
-        paging = Paging(**paging_raw) if isinstance(paging_raw, dict) else None
+            raw = []
+        items: list[T] = [model(**item) for item in raw]
+        paging_raw: Any = body.get("paging")
+        paging = Paging(**cast("dict[str, Any]", paging_raw)) if isinstance(paging_raw, dict) else None
         if total is None and paging is not None:
             total = paging.total
-        return Page[model](items=items, paging=paging, total=total)  # type: ignore[valid-type]
+        return Page(items=items, paging=paging, total=total)

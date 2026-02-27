@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from kworkapi.models.common import Page
 from kworkapi.models.kwork import Kwork
 from kworkapi.models.user import User
@@ -22,19 +24,19 @@ class UsersResource(Resource):
         data = {"user_id": user_id, "page": page}
         return self._page(await self._call("userKworks", data=data), Kwork)
 
-    async def reviews(self, user_id: int, *, type: str = "", page: int = 1) -> dict:
+    async def reviews(self, user_id: int, *, type: str = "", page: int = 1) -> dict[str, Any]:
         """Отзывы о пользователе (`/userReviews`)."""
         data = {"user_id": user_id, "type": type, "page": page}
         return await self._call("userReviews", data=data)
 
-    async def kworks_categories(self, user_id: int) -> dict:
+    async def kworks_categories(self, user_id: int) -> dict[str, Any]:
         """Категории kwork'ов пользователя (`/kworksCategoriesList`)."""
         return self._payload(await self._call("kworksCategoriesList", data={"user_id": user_id}))
 
-    async def kworks_statuses(self) -> dict:
+    async def kworks_statuses(self) -> dict[str, Any]:
         """Список возможных статусов kwork (`/kworksStatusList`)."""
         return self._payload(await self._call("kworksStatusList"))
 
-    async def blocked_dialogs(self, *, page: int = 1) -> dict:
+    async def blocked_dialogs(self, *, page: int = 1) -> dict[str, Any]:
         """Список заблокированных диалогов (`/blockedDialogs`)."""
         return await self._call("blockedDialogs", data={"page": page})

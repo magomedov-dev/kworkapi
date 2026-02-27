@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from kworkapi.models.common import Page
 from kworkapi.models.kwork import KworksResult
 from kworkapi.models.user import User
@@ -26,7 +28,7 @@ class SearchResource(Resource):
         }
         return self._model(await self._call("search", data=data), KworksResult)
 
-    async def suggest(self, query: str, *, page: int = 1) -> dict:
+    async def suggest(self, query: str, *, page: int = 1) -> dict[str, Any]:
         """Подсказки поисковых запросов (`/searchKworksCatalogQuery`)."""
         data = {"query": query, "page": page}
         return self._payload(await self._call("searchKworksCatalogQuery", data=data))

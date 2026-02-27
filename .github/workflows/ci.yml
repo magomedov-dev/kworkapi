@@ -30,5 +30,8 @@ jobs:
       - name: Mypy (типы)
         run: mypy kworkapi
 
+      - name: Pyright (строгая типизация)
+        run: pyright kworkapi
+
       - name: Pytest (моки; живые тесты пропускаются)
         run: pytest -q

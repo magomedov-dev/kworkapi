@@ -4,6 +4,24 @@
 [Keep a Changelog](https://keepachangelog.com/ru/1.1.0/),
 версионирование — [SemVer](https://semver.org/lang/ru/).
 
+## [0.5.0] — 2026-02-28
+
+Подготовка к публикации: строгая типизация и упаковка для PyPI.
+
+### Добавлено
+
+- **Полная типизация**: пройден **pyright strict** (0 ошибок) и mypy; маркер
+  `py.typed` (PEP 561) — потребители получают типы и автодополнение из коробки.
+- **Метаданные пакета** для PyPI: classifiers, keywords, project-urls, SPDX-лицензия,
+  включение `docs/` в sdist.
+- `pyright` добавлен в dev-зависимости и в инструменты качества.
+
+### Изменено
+
+- `Page[T]` теперь generic-`dataclass` (итерация, `len()`, `model_dump()`) — убран
+  конфликт с pydantic и обеспечена корректная типизация.
+- Внутренние хелперы и транспорт строго типизированы (wire-JSON как `Any` + `cast`).
+
 ## [0.4.0] — 2026-02-26
 
 Полное покрытие API: **12 ресурсов, 166 методов**.
@@ -101,6 +119,7 @@
 - Не покрыты (план 4b): детальные операции с заказами (approve/cancel/стадии/отзывы),
   загрузка файлов/аватара, голосовые сообщения.
 
+[0.5.0]: https://github.com/magomedov-dev/kworkapi/releases/tag/v0.5.0
 [0.4.0]: https://github.com/magomedov-dev/kworkapi/releases/tag/v0.4.0
 [0.3.0]: https://github.com/magomedov-dev/kworkapi/releases/tag/v0.3.0
 [0.2.0]: https://github.com/magomedov-dev/kworkapi/releases/tag/v0.2.0

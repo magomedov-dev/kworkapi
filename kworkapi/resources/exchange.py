@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from kworkapi.models.catalog import Category
 from kworkapi.models.exchange import ExchangeInfo, Offer
 from kworkapi.resources.base import Resource
@@ -15,7 +17,7 @@ class ExchangeResource(Resource):
         price_from: int | None = None,
         price_to: int | None = None,
         page: int = 1,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Лента проектов на бирже (`/projects`).
 
         Возвращает сырой ответ: структура зависит от наличия проектов
@@ -37,11 +39,11 @@ class ExchangeResource(Resource):
         """Категории проектов биржи (`/categories`)."""
         return self._list(await self._call("categories", data={"type": type}), Category)
 
-    async def favorite_categories(self) -> dict:
+    async def favorite_categories(self) -> dict[str, Any]:
         """Избранные категории биржи (`/favoriteCategories`)."""
         return self._payload(await self._call("favoriteCategories"))
 
-    async def wants_count(self) -> dict:
+    async def wants_count(self) -> dict[str, Any]:
         """Счётчик и фильтры доступных проектов (`/getWantsCount`)."""
         return self._payload(await self._call("getWantsCount"))
 
@@ -49,7 +51,7 @@ class ExchangeResource(Resource):
         """Мои отклики на проекты (`/offers`)."""
         return self._list(await self._call("offers", data={"page": page}), Offer)
 
-    async def my_wants(self, *, page: int = 1, status_id: int = -1) -> dict:
+    async def my_wants(self, *, page: int = 1, status_id: int = -1) -> dict[str, Any]:
         """Мои размещённые проекты (`/myWants`)."""
         data = {"page": page, "want_status_id": status_id}
         return await self._call("myWants", data=data)
@@ -64,7 +66,7 @@ class ExchangeResource(Resource):
         price: int,
         duration: int,
         offer_type: str = "custom",
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Откликнуться на проект (`/api/offer/createoffer`, multipart).
 
         :param want_id: id проекта.
@@ -89,7 +91,7 @@ class ExchangeResource(Resource):
         price: int,
         duration: int,
         offer_type: str = "custom",
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Изменить отклик (`/api/offer/editoffer`, multipart)."""
         data = {
             "wantId": want_id,
@@ -100,7 +102,7 @@ class ExchangeResource(Resource):
         }
         return await self._call("api/offer/editoffer", data=data, multipart=True)
 
-    async def delete_offer(self, offer_id: int) -> dict:
+    async def delete_offer(self, offer_id: int) -> dict[str, Any]:
         """Удалить отклик (`/api/offer/deleteoffer`)."""
         return await self._call("api/offer/deleteoffer", data={"id": offer_id})
 
@@ -117,7 +119,7 @@ class ExchangeResource(Resource):
         price_to: int | None = None,
         hiring_from: int | None = None,
         offers: str = "",
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Число доступных проектов по фильтрам (`/getWantsCount`)."""
         data = {
             "categories": categories,
@@ -129,6 +131,6 @@ class ExchangeResource(Resource):
         }
         return self._payload(await self._call("getWantsCount", data=data))
 
-    async def set_favorite_categories(self, categories: str, *, attributes: str = "") -> dict:
+    async def set_favorite_categories(self, categories: str, *, attributes: str = "") -> dict[str, Any]:
         """Сохранить избранные категории биржи (`/setFavorite`)."""
         return await self._call("setFavorite", data={"categories": categories, "attributes": attributes})
