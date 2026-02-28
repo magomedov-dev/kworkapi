@@ -17,13 +17,17 @@ class FakeTransport:
     def __init__(self, responses: dict[str, dict]):
         self.responses = responses
         self.uad = "FAKEUAD"
+        self.base_url = "https://api.kwork.ru/"
         self.calls: list[tuple[str, dict]] = []
 
     async def call(self, method, *, data=None, token=None, auth=True, multipart=False, files=None):
         self.calls.append((method, data or {}))
         if method not in self.responses:
             raise AssertionError(f"неожиданный вызов метода {method}")
-        return self.responses[method]
+        value = self.responses[method]
+        if isinstance(value, Exception):
+            raise value
+        return value
 
     def current_slrememberme(self):
         return ""
@@ -75,7 +79,39 @@ def test_login_returns_token():
     _override({"signIn": ok({"token": "TOK123", "expired": 100, "need_2fa": False})}, anon=True)
     r = client.post("/auth/login", json={"login": "u", "password": "p"})
     assert r.status_code == 200
-    assert r.json()["token"] == "TOK123"
+    body = r.json()
+    assert body["status"] == "ok" and body["token"] == "TOK123"
+
+
+def test_login_captcha_then_solve():
+    from kworkapi.exceptions import KworkAPIError
+
+    _override(
+        {
+            "signIn": KworkAPIError("Подтвердите, что вы не робот", code=118),
+            "signInWithCaptcha": {
+                "success": True,
+                "response": {"token": "TOK", "expired": 100},
+                "recaptcha_pass_token": "PASS",
+            },
+        },
+        anon=True,
+    )
+    # шаг 1: логин → требуется капча
+    r1 = client.post("/auth/login", json={"login": "u@e.com", "password": "p"})
+    assert r1.status_code == 200
+    b1 = r1.json()
+    assert b1["status"] == "captcha"
+    assert b1["sitekey"] and b1["page_url"].endswith("/captcha_only")
+    # шаг 2: решение капчи → токен
+    r2 = client.post(
+        "/auth/login/captcha",
+        json={"login": "u@e.com", "password": "p", "solution": "g-token"},
+    )
+    assert r2.status_code == 200
+    b2 = r2.json()
+    assert b2["status"] == "ok" and b2["token"] == "TOK"
+    assert b2["recaptcha_pass_token"] == "PASS"
 
 
 def test_account_me():

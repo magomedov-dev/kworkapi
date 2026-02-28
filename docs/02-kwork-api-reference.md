@@ -76,6 +76,42 @@ uad = SHA1_hex( "35"
 > При срабатывании анти-бота вход может потребовать капчу: `signInWithCaptcha`
 > (поле `g-recaptcha-response`) или подтверждение телефоном (`phone_last`).
 
+## Капча (Google reCAPTCHA v2) — подтверждено живым трафиком
+
+Признак: `POST /signIn` возвращает **HTTP 200** с телом
+
+```json
+{"success": false, "error": "Подтвердите, что вы не робот", "error_code": 118}
+```
+
+`error_code 118` = нужна капча. Параметры (захвачены со страницы `/captcha_only`):
+
+| Параметр | Значение |
+|---|---|
+| Провайдер | Google reCAPTCHA v2 (`https://www.google.com/recaptcha/api.js`) |
+| sitekey | `6LdX9CATAAAAAARb0rBU8FXXdUBajy3IlVjZ2qHS` (одинаков для .ru/.com) |
+| Страница виджета | `https://kwork.ru/captcha_only` (callback `RecaptchaSuccess`, токен в `#response=`) |
+
+Поток решения:
+
+1. `signIn` → `error_code 118`.
+2. Получить `g-recaptcha-response` (WebView на `/captcha_only`, свой виджет с sitekey,
+   или решалка вроде 2captcha по sitekey+pageurl). Токен привязан к домену `kwork.ru`
+   и живёт ~2 минуты.
+3. `POST /signInWithCaptcha` с полями `login`, `password`, `g-recaptcha-response`,
+   `recaptcha_pass_token`, `phone_last` → успех + `recaptcha_pass_token` (на верхнем
+   уровне ответа, рядом с `response`).
+4. `recaptcha_pass_token` передавать в последующие `signIn` (поле `recaptcha_pass_token`),
+   чтобы капчу больше не спрашивали.
+
+В библиотеке это `login()` → `LoginChallenge` → `kw.solve_captcha(challenge, token)`
+(см. [07-usage.md](07-usage.md)). Есть также картиночная ветка (`captcha_img`/
+`captcha_sid`/`captchaCode`) и подтверждение телефоном — для аккаунтов, где включены.
+
+> Внимание: `server: QRATOR` — анти-DDoS Qrator. Его **WAF может отдать HTTP 403**
+> без тела — это НЕ капча (решать нечего), а жёсткий лимит; библиотека поднимает
+> `KworkRateLimitError`. Капча (118) и WAF-блок (403) — разные механизмы.
+
 ## Формат ответов (обёртки)
 
 Иерархия Gson-моделей:

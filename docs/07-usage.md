@@ -68,7 +68,35 @@ async with KworkClient() as kw:
     print(session.token, session.expired, session.need_2fa)
 ```
 
-При срабатывании капчи передайте токен прохождения:
+### Капча (Google reCAPTCHA v2)
+
+`login()` возвращает либо `Session`, либо `LoginChallenge` (если kwork требует
+капчу, `error_code 118`). Капча — **не исключение**, а объект-челлендж:
+
+```python
+from kworkapi import KworkClient, Session, LoginChallenge
+
+async with KworkClient() as kw:
+    result = await kw.login("user@example.com", "password")
+    if isinstance(result, LoginChallenge):
+        # result.sitekey   — '6LdX9CAT...' (reCAPTCHA v2)
+        # result.page_url  — https://kwork.ru/captcha_only
+        token = await solve_recaptcha(result.sitekey, result.page_url)  # ваш способ
+        session = await kw.solve_captcha(result, token)
+    else:
+        session = result
+    print(session.token, session.recaptcha_pass_token)
+```
+
+Как получить `g-recaptcha-response` (`token`) — на стороне потребителя, любым способом:
+- открыть `result.page_url` в WebView (Qt `QWebEngineView`, Electron, браузер), дать
+  пользователю решить, перехватить токен из фрагмента `#response=`;
+- отрендерить свой reCAPTCHA-виджет с `result.sitekey` на странице origin `kwork.ru`;
+- использовать решалку (2captcha/anti-captcha): передать `sitekey` + `pageurl`.
+
+**Чтобы капчу не спрашивали повторно** — сохраните `session.recaptcha_pass_token`
+вместе с сессией; при следующем `login()` он подставится автоматически (или передайте
+явно через `recaptcha_pass_token=...`):
 
 ```python
 await kw.login("user@example.com", "password", recaptcha_pass_token="...")

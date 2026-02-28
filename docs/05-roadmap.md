@@ -141,6 +141,16 @@ Conventional Commits на русском. Каждая фаза заканчив
   deleteWant/stopWant/restartWant/wantsStatusList, orderKwork, createKworkComplain,
   socialSignIn — добавятся при появлении образца тела.
 
+## Фаза 10 — Капча при входе ✅
+**Ветка:** `feature/phase-10-captcha`
+- ✅ Захвачена реальная капча: `/signIn` → `error_code 118`, провайдер Google
+  reCAPTCHA v2, sitekey `6LdX9CAT…`, страница `/captcha_only`.
+- ✅ `login()`/`register()` → `Session | LoginChallenge` (без исключения).
+- ✅ `solve_captcha(challenge, g_recaptcha_response)` → `Session` (`/signInWithCaptcha`).
+- ✅ `recaptcha_pass_token` сохраняется в `Session` и переиспользуется автоматически.
+- ✅ FastAPI: двухшаговый вход (`/auth/login` → captcha, `/auth/login/captcha` → token).
+- ✅ Тесты (4 шт.), pyright strict 0. Документация в `docs/02` и `docs/07`.
+
 ## Сквозные правила
 - **gitflow**: фичи → `develop`, релизы → `main`, теги semver.
 - **Коммиты**: Conventional Commits (`feat:`/`fix:`/`docs:`/`refactor:`/`test:`/`chore:`),

@@ -5,7 +5,7 @@ from __future__ import annotations
 from types import TracebackType
 from typing import Any
 
-from kworkapi.auth import Auth, Session
+from kworkapi.auth import Auth, LoginChallenge, Session
 from kworkapi.exceptions import KworkAuthError
 from kworkapi.resources.account import AccountResource
 from kworkapi.resources.catalog import CatalogResource
@@ -80,11 +80,25 @@ class KworkClient:
         password: str,
         *,
         recaptcha_pass_token: str = "",
-    ) -> Session:
-        """Войти по логину/паролю и сохранить сессию в клиенте."""
-        self.session = await self._auth.sign_in(
+    ) -> Session | LoginChallenge:
+        """Войти по логину/паролю.
+
+        Возвращает :class:`Session` при успехе или :class:`LoginChallenge`, если
+        нужна капча — тогда решите её и вызовите :meth:`solve_captcha`.
+        Сохранённый ранее ``recaptcha_pass_token`` подставляется автоматически.
+        """
+        if not recaptcha_pass_token and self.session:
+            recaptcha_pass_token = self.session.recaptcha_pass_token
+        result = await self._auth.sign_in(
             login, password, recaptcha_pass_token=recaptcha_pass_token
         )
+        if isinstance(result, Session):
+            self.session = result
+        return result
+
+    async def solve_captcha(self, challenge: LoginChallenge, solution: str) -> Session:
+        """Завершить вход решением капчи (``g-recaptcha-response``) и сохранить сессию."""
+        self.session = await self._auth.solve_captcha(challenge, solution)
         return self.session
 
     async def register(
@@ -97,9 +111,9 @@ class KworkClient:
         promocode: str = "",
         recaptcha_response: str = "",
         is_subscribed: int = 0,
-    ) -> Session:
-        """Зарегистрироваться и сохранить сессию в клиенте."""
-        self.session = await self._auth.sign_up(
+    ) -> Session | LoginChallenge:
+        """Зарегистрироваться. Возвращает :class:`Session` или :class:`LoginChallenge`."""
+        result = await self._auth.sign_up(
             username,
             email,
             password,
@@ -108,7 +122,9 @@ class KworkClient:
             recaptcha_response=recaptcha_response,
             is_subscribed=is_subscribed,
         )
-        return self.session
+        if isinstance(result, Session):
+            self.session = result
+        return result
 
     async def reset_password(self, email: str, *, recaptcha_response: str = "") -> dict[str, Any]:
         """Запросить сброс пароля письмом (без авторизации)."""

@@ -4,6 +4,28 @@
 [Keep a Changelog](https://keepachangelog.com/ru/1.1.0/),
 версионирование — [SemVer](https://semver.org/lang/ru/).
 
+## [0.6.0] — 2026-02-28
+
+Обработка капчи при входе (challenge/response вместо исключения).
+
+### Добавлено
+
+- **`LoginChallenge`** — `login()`/`register()` возвращают `Session | LoginChallenge`.
+  При `error_code 118` возвращается челлендж с `provider`, `sitekey`
+  (`6LdX9CAT…`, Google reCAPTCHA v2) и `page_url` (`/captcha_only`) — без исключения.
+- **`KworkClient.solve_captcha(challenge, g_recaptcha_response)`** → `Session`
+  (через `/signInWithCaptcha`).
+- **`recaptcha_pass_token`** сохраняется в `Session` и автоматически переиспользуется
+  при следующих входах, чтобы капчу не спрашивали повторно.
+- **FastAPI**: двухшаговый вход — `POST /auth/login` отдаёт `status:"captcha"` с
+  sitekey/page_url, `POST /auth/login/captcha` принимает решение и выдаёт токен.
+
+### Подтверждено живым трафиком
+
+- Капча `/signIn` приходит как HTTP 200 `{"success":false,"error_code":118}`; провайдер —
+  Google reCAPTCHA v2, sitekey со страницы `/captcha_only`. HTTP 403 от Qrator-WAF —
+  отдельный механизм (не капча), поднимается как `KworkRateLimitError`.
+
 ## [0.5.0] — 2026-02-28
 
 Подготовка к публикации: строгая типизация и упаковка для PyPI.
@@ -119,6 +141,7 @@
 - Не покрыты (план 4b): детальные операции с заказами (approve/cancel/стадии/отзывы),
   загрузка файлов/аватара, голосовые сообщения.
 
+[0.6.0]: https://github.com/magomedov-dev/kworkapi/releases/tag/v0.6.0
 [0.5.0]: https://github.com/magomedov-dev/kworkapi/releases/tag/v0.5.0
 [0.4.0]: https://github.com/magomedov-dev/kworkapi/releases/tag/v0.4.0
 [0.3.0]: https://github.com/magomedov-dev/kworkapi/releases/tag/v0.3.0
